@@ -1,0 +1,19 @@
+appname: user_server
+config_path: dfadsf
+dbconfig:
+  automigrate: true
+  databasename: business
+  debug: false
+  driver: postgres
+  host: 127.0.0.1
+  maxidleconns: "10"
+  maxopenconns: "20"
+  password: business
+  port: "5432"
+  username: business
+debug: true
+grpcgatewayport: "8300"
+grpcport: "8200"
+httpport: "8100"
+run_mode: unit_test
+tlskey: "8300"
