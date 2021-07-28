@@ -17,7 +17,8 @@ type PostInterface interface {
 
 type XHttp interface {
 	Run()
-	Register()
+	Register() XHttp
+	Inject() XHttp
 }
 
 type Database interface {

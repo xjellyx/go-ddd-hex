@@ -3,7 +3,6 @@ package xgin
 import (
 	"context"
 	"crypto/tls"
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/application"
@@ -28,16 +27,17 @@ type XGin struct {
 }
 
 func NewXGin(ctx context.Context, cfg *config.Config, app map[string]interface{}) *XGin {
-	return &XGin{
+	g := &XGin{
 		appSrv: app,
 		ctx:    ctx,
 		cfg:    cfg,
+		mux:    gin.Default(),
 	}
+
+	return g
 }
 
 func (g *XGin) Run() {
-	g.setupMux()
-	g.Register()
 	server := &http.Server{
 		Addr:    net.JoinHostPort("", g.cfg.HttpPort),
 		Handler: g.mux,
@@ -88,24 +88,21 @@ func (g *XGin) Run() {
 
 }
 
-func (g *XGin) setupMux() {
+func (g *XGin) Inject() application.XHttp {
 	if !g.cfg.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
-
-	// gin
-	g.mux = gin.Default()
 	if g.cfg.Debug {
 		// 打印body
 		// g.mux.Use(RequestLoggerMiddleware)
 	}
 	g.mux.Use(ginhttp.Middleware(g.cfg.Tracer))
-
+	return g
 }
 
-func (g *XGin) Register() {
-	pprof.Register(g.mux) // default is "debug/pprof"
-	group := g.mux.Group(ApiV1)
-	registerUserRouter(group, g.appSrv[contanst.UserTag].(application.UserInterface))
-	registerPostRouter(group, g.appSrv[contanst.PostTag].(application.PostInterface))
+func (g *XGin) Register() application.XHttp {
+	g.RegisterPprof()
+	g.RegisterPostRouter(g.appSrv[contanst.PostTag].(application.PostInterface))
+	g.RegisterUserRouter(g.appSrv[contanst.UserTag].(application.UserInterface))
+	return g
 }
