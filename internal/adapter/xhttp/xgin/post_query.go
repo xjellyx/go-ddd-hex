@@ -24,7 +24,7 @@ func (p *PostQueryCtl) GetByUserID(c *gin.Context) {
 			response.NewGinResponse(c).Success(data).Response()
 		}
 	}()
-	if data, err = p.domain.GetByUserID(c, userId); err != nil {
+	if data, err = p.domain.GetByUserID(userId); err != nil {
 		return
 	}
 }

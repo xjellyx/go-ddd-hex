@@ -28,7 +28,7 @@ func (u *UserQueryCtl) Get(ctx *gin.Context) {
 	}()
 
 	id = ctx.Param("id")
-	if res, err = u.domain.Get(ctx, id); err != nil {
+	if res, err = u.domain.Get(id); err != nil {
 		return
 	}
 	return

@@ -1,7 +1,6 @@
 package aggregate
 
 import (
-	"context"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
@@ -9,8 +8,8 @@ import (
 )
 
 type UserPostFactory struct {
-	UserRepo func(ctx context.Context) dependency.UserRepo
-	PostRepo func(ctx context.Context) dependency.PostRepo
+	UserRepo dependency.UserRepo
+	PostRepo dependency.PostRepo
 }
 
 type QueryUserPostRes struct {
@@ -18,21 +17,21 @@ type QueryUserPostRes struct {
 	Posts []vo.PostRes `json:"posts"`
 }
 
-func NewUserPostFactory(postRepo func(ctx context.Context) dependency.PostRepo,
-	userRepoFn func(ctx context.Context) dependency.UserRepo) *UserPostFactory {
-	return &UserPostFactory{userRepoFn, postRepo}
+func NewUserPostFactory(postRepo dependency.PostRepo,
+	userRepo dependency.UserRepo) *UserPostFactory {
+	return &UserPostFactory{userRepo, postRepo}
 }
 
-func (f *UserPostFactory) UserPostQuery(ctx context.Context, userId string) (res *QueryUserPostRes, err error) {
+func (f *UserPostFactory) UserPostQuery(userId string) (res *QueryUserPostRes, err error) {
 	var (
 		data     *entity.User
 		dataPost []*entity.Post
 	)
 
-	if data, err = f.UserRepo(ctx).Get(userId); err != nil {
+	if data, err = f.UserRepo.Get(userId); err != nil {
 		return nil, err
 	}
-	if dataPost, err = f.PostRepo(ctx).Find(map[string]interface{}{
+	if dataPost, err = f.PostRepo.Find(map[string]interface{}{
 		"user_uuid": userId,
 	}, &query.Meta{PageNum: 1, PageSize: 10}); err != nil {
 		return

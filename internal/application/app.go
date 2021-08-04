@@ -7,12 +7,12 @@ import (
 )
 
 type UserInterface interface {
-	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
-	Get(ctx context.Context, id string) (res *vo.UserRes, err error)
+	ChangePassword(id string, oldPwd, newPwd string) error
+	Get(id string) (res *vo.UserRes, err error)
 }
 
 type PostInterface interface {
-	GetByUserID(ctx context.Context, userID string) (*aggregate.QueryUserPostRes, error)
+	GetByUserID(userID string) (*aggregate.QueryUserPostRes, error)
 }
 
 type XHttp interface {
@@ -27,13 +27,19 @@ type Database interface {
 }
 
 type Application struct {
-	Http     XHttp
-	Database Database
+	XHttp
+	Database
 }
 
-func NewApplication(h XHttp, db Database) *Application {
-	return &Application{
-		Http:     h,
-		Database: db,
-	}
+func NewApplication() *Application {
+	return &Application{}
+}
+func (a *Application) SetXHttp(x XHttp) *Application {
+	a.XHttp = x
+	return a
+}
+
+func (a *Application) SetDatabase(d Database) *Application {
+	a.Database = d
+	return a
 }

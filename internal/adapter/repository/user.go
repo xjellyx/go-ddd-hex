@@ -4,25 +4,12 @@ import (
 	"context"
 	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/application"
-	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
 	"github.com/olongfen/go-ddd-hex/lib/query"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
-
-type userDB struct {
-	db application.Database
-}
-
-func (u *userDB) GetRepo(ctx context.Context) dependency.UserRepo {
-	return newUserRepo(ctx, u.db)
-}
-
-func NewUserDB(db application.Database) *userDB {
-	return &userDB{db: db}
-}
 
 type userRepo struct {
 	db *gorm.DB
@@ -39,7 +26,7 @@ func init() {
 	})
 }
 
-func newUserRepo(ctx context.Context, database application.Database) *userRepo {
+func NewUserRepo(ctx context.Context, database application.Database) *userRepo {
 	return &userRepo{db: database.DB(ctx).(*gorm.DB)}
 }
 

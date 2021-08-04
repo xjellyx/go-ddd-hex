@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
@@ -9,19 +8,19 @@ import (
 )
 
 type userService struct {
-	repoFn func(ctx context.Context) dependency.UserRepo
+	repo   dependency.UserRepo
 	txImpl dependency.Transaction
 }
 
-func NewUserService(txImpl dependency.Transaction, repoFn func(ctx context.Context) dependency.UserRepo) *userService {
-	return &userService{repoFn: repoFn, txImpl: txImpl}
+func NewUserService(txImpl dependency.Transaction, repo dependency.UserRepo) *userService {
+	return &userService{repo: repo, txImpl: txImpl}
 }
 
-func (u *userService) Get(ctx context.Context, id string) (res *vo.UserRes, err error) {
+func (u *userService) Get(id string) (res *vo.UserRes, err error) {
 	var (
 		data *entity.User
 	)
-	if data, err = u.repoFn(ctx).Get(id); err != nil {
+	if data, err = u.repo.Get(id); err != nil {
 		return
 	}
 	res = new(vo.UserRes)
@@ -33,11 +32,11 @@ func (u *userService) Get(ctx context.Context, id string) (res *vo.UserRes, err 
 	return
 }
 
-func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) (err error) {
+func (u *userService) ChangePassword(id string, oldPwd, newPwd string) (err error) {
 	var (
 		data *entity.User
 	)
-	if data, err = u.repoFn(ctx).Get(id); err != nil {
+	if data, err = u.repo.Get(id); err != nil {
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(data.Password.String), []byte(oldPwd)); err != nil {
@@ -49,7 +48,7 @@ func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, new
 		return
 	}
 	data.Password.SetValid(string(_n))
-	if err = u.repoFn(ctx).Update(data.QueryCond(), map[string]interface{}{"password": data.Password.String}); err != nil {
+	if err = u.repo.Update(data.QueryCond(), map[string]interface{}{"password": data.Password.String}); err != nil {
 		return
 	}
 

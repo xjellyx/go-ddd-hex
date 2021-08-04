@@ -4,25 +4,12 @@ import (
 	"context"
 	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/application"
-	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
 	"github.com/olongfen/go-ddd-hex/lib/query"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
-
-type postDB struct {
-	db application.Database
-}
-
-func (u *postDB) GetRepo(ctx context.Context) dependency.PostRepo {
-	return newPostRepo(ctx, u.db)
-}
-
-func NewPostDB(db application.Database) *postDB {
-	return &postDB{db: db}
-}
 
 type postRepo struct {
 	db *gorm.DB
@@ -39,7 +26,7 @@ func init() {
 	})
 }
 
-func newPostRepo(ctx context.Context, database application.Database) *postRepo {
+func NewPostRepo(ctx context.Context, database application.Database) *postRepo {
 	return &postRepo{db: database.DB(ctx).(*gorm.DB)}
 }
 

@@ -12,13 +12,13 @@ import (
 
 func main() {
 	cfg := config.GetConfig()
+	app := application.NewApplication()
 	database := db.NewDatabase(&cfg.DBConfig)
-	userDB := repository.NewUserDB(database)
-	user := service.NewUserService(repository.NewNoopTransaction(), userDB.GetRepo)
-	post := service.NewPostService(repository.NewNoopTransaction(), repository.NewPostDB(database).GetRepo, userDB.GetRepo)
+	app.SetDatabase(database).Connect()
+	userResp := repository.NewUserRepo(cfg.Ctx, database)
+	user := service.NewUserService(repository.NewNoopTransaction(), userResp)
+	post := service.NewPostService(repository.NewNoopTransaction(), repository.NewPostRepo(cfg.Ctx, database), userResp)
 	ctl := xgin.NewXGin(cfg.Ctx, cfg, map[string]interface{}{contanst.UserTag: user,
 		contanst.PostTag: post})
-	app := application.NewApplication(ctl, database)
-	app.Database.Connect()
-	app.Http.Inject().Register().Run()
+	app.SetXHttp(ctl).Inject().Register().Run()
 }
