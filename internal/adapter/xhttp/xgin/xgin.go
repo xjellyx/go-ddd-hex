@@ -5,13 +5,13 @@ import (
 	"crypto/tls"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/config"
+	"github.com/olongfen/go-ddd-hex/internal/adapter/xhttp/xgin/middleware"
 	"github.com/olongfen/go-ddd-hex/internal/application"
-	"github.com/olongfen/go-ddd-hex/internal/contanst"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
-	"github.com/opentracing-contrib/go-gin/ginhttp"
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -20,21 +20,18 @@ const (
 )
 
 type XGin struct {
-	appSrv map[string]interface{}
-	ctx    context.Context
-	cfg    *config.Config
-	mux    *gin.Engine
+	ctx context.Context
+	cfg *config.Config
+	mux *gin.Engine
 }
 
-func NewXGin(ctx context.Context, cfg *config.Config, app map[string]interface{}) *XGin {
+func init() {
 	g := &XGin{
-		appSrv: app,
-		ctx:    ctx,
-		cfg:    cfg,
-		mux:    gin.Default(),
+		ctx: application.App.Ctx,
+		cfg: config.GetConfig(),
+		mux: gin.Default(),
 	}
-
-	return g
+	application.App.SetXHttp(g)
 }
 
 func (g *XGin) Run() {
@@ -88,21 +85,26 @@ func (g *XGin) Run() {
 
 }
 
-func (g *XGin) Inject() application.XHttp {
+func (g *XGin) Register(repos []application.Service) application.XHttp {
+	g.RegisterPprof()
 	if !g.cfg.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	if g.cfg.Debug {
 		// 打印body
-		// g.mux.Use(RequestLoggerMiddleware)
+		g.mux.Use(middleware.GinLogFormatter())
 	}
-	g.mux.Use(ginhttp.Middleware(g.cfg.Tracer))
-	return g
-}
+	// 使用中间件
+	g.mux.Use(middleware.Tracer())
+	for _, v := range repos {
+		t := reflect.TypeOf(v)
+		switch t.Elem().Name() {
+		case "userService":
+			g.registerUserRouter(v.(application.UserInterface))
+		case "postService":
+			g.registerPostRouter(v.(application.PostInterface))
+		}
+	}
 
-func (g *XGin) Register() application.XHttp {
-	g.RegisterPprof()
-	g.RegisterPostRouter(g.appSrv[contanst.PostTag].(application.PostInterface))
-	g.RegisterUserRouter(g.appSrv[contanst.UserTag].(application.UserInterface))
 	return g
 }

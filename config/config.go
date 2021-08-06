@@ -1,20 +1,11 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
-	"github.com/olongfen/go-ddd-hex/lib/utils"
-	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go/log/zap"
-	"github.com/uber/jaeger-lib/metrics"
-	"io"
 	"io/fs"
-	"os"
 )
 
 const (
@@ -37,15 +28,6 @@ type Config struct {
 
 	// db
 	DBConfig
-	Ctx    context.Context
-	Cancel context.CancelFunc
-	/*
-		根据环境变量配置jaeger，参考 https://github.com/jaegertracing/jaeger-client-go#environment-variables
-
-		JAEGER_AGENT_HOST
-		JAEGER_AGENT_PORT
-	*/
-	Tracer opentracing.Tracer
 }
 
 type DBConfig struct {
@@ -62,7 +44,6 @@ type DBConfig struct {
 }
 
 func setDefault() {
-	cfg.Ctx, cfg.Cancel = utils.NewWaitGroupCtx()
 	viper.SetDefault("appname", "user_server")
 	viper.SetDefault("httpPort", "8100")
 	viper.SetDefault("grpcPort", "8200")
@@ -80,52 +61,6 @@ func setDefault() {
 	viper.SetDefault("dbconfig.MaxOpenConns", "20")
 	viper.SetDefault("dbconfig.AutoMigrate", true)
 	viper.SetDefault("dbconfig.Debug", true)
-}
-
-func setTrace(ctx context.Context) (err error) {
-	defer func() {
-		cfg.Tracer = opentracing.GlobalTracer()
-	}()
-	isSet := func(env string) bool {
-		_, ok := os.LookupEnv(env)
-		return ok
-	}
-
-	if !(isSet("JAEGER_AGENT_HOST") ||
-		isSet("JAEGER_ENDPOINT")) {
-		return
-	}
-	var (
-		jaegerCfg *jaegercfg.Configuration
-		closer    io.Closer
-	)
-	if jaegerCfg, err = jaegercfg.FromEnv(); err != nil {
-		return
-	}
-	if cfg.Debug {
-		jaegerCfg.Sampler.Type = jaeger.SamplerTypeConst
-		jaegerCfg.Sampler.Param = 1
-		jaegerCfg.Reporter.LogSpans = true
-	}
-	jMetricsFactory := metrics.NullFactory
-
-	// Initialize tracer with a logger and a metrics factory
-	if closer, err = jaegerCfg.InitGlobalTracer(cfg.APPName, jaegercfg.Logger(zap.NewLogger(nil)),
-		jaegercfg.Metrics(jMetricsFactory)); err != nil {
-		log.Errorf("Could not initialize jaeger tracer: %s", err.Error())
-		return
-	}
-	wg := utils.GetWaitGroupInCtx(ctx)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		<-ctx.Done()
-		if err = closer.Close(); err != nil {
-			log.Errorln(err)
-		}
-		log.Infoln("trace close")
-	}()
-	return
 }
 
 func init() {
@@ -153,10 +88,6 @@ func init() {
 		}
 	}
 	if err := viper.Unmarshal(cfg); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := setTrace(cfg.Ctx); err != nil {
 		log.Fatal(err)
 	}
 

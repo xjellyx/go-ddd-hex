@@ -7,9 +7,10 @@ import (
 	"github.com/olongfen/go-ddd-hex/lib/query"
 )
 
+// UserPostFactory 帖子与用户逻辑聚合工厂模式
 type UserPostFactory struct {
-	UserRepo dependency.UserRepo
-	PostRepo dependency.PostRepo
+	UserRepo dependency.UserRepo // 用户存储库
+	PostRepo dependency.PostRepo // 帖子存储库
 }
 
 type QueryUserPostRes struct {
