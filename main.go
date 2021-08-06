@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	application.app.InjectServices().Run()
+	application.App.InjectServices().Run()
 }

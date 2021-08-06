@@ -16,7 +16,7 @@ type userRepo struct {
 }
 
 func init() {
-	application.app.AppendRepo(NewUserRepo(application.app.Ctx, application.app.Database))
+	application.App.AppendRepo(NewUserRepo(application.App.Ctx, application.App.Database))
 	db.RegisterInjector(func(db *gorm.DB) {
 		if config.GetConfig().AutoMigrate {
 			err := db.AutoMigrate(&entity.User{})

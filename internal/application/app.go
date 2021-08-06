@@ -156,6 +156,7 @@ func (a *Application) setTrace() (err error) {
 
 	if !(isSet("JAEGER_AGENT_HOST") ||
 		isSet("JAEGER_ENDPOINT")) {
+		println("wwwwwwwwwwwwwwwww")
 		return
 	}
 	var (
@@ -178,6 +179,7 @@ func (a *Application) setTrace() (err error) {
 		log.Errorf("Could not initialize jaeger tracer: %s", err.Error())
 		return
 	}
+	jaegerCfg.NewTracer()
 	wg := utils.GetWaitGroupInCtx(a.Ctx)
 	wg.Add(1)
 	go func() {

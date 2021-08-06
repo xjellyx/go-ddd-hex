@@ -18,5 +18,5 @@ latency: %s, body: %v %v`, params.ClientIP, params.TimeStamp.Format("2006-01-02 
 }
 
 func Tracer() gin.HandlerFunc {
-	return ginhttp.Middleware(application.app.Tracer)
+	return ginhttp.Middleware(application.App.Tracer)
 }
