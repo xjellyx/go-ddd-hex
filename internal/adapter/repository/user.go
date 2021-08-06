@@ -2,12 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
-	"github.com/olongfen/go-ddd-hex/internal/infra/db"
 	"github.com/olongfen/go-ddd-hex/lib/query"
-	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -17,14 +14,6 @@ type userRepo struct {
 
 func init() {
 	application.App.AppendRepo(NewUserRepo(application.App.Ctx, application.App.Database))
-	db.RegisterInjector(func(db *gorm.DB) {
-		if config.GetConfig().AutoMigrate {
-			err := db.AutoMigrate(&entity.User{})
-			if err != nil {
-				logrus.Fatal(err)
-			}
-		}
-	})
 }
 
 func NewUserRepo(ctx context.Context, database application.Database) *userRepo {

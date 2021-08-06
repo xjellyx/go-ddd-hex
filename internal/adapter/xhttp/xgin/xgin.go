@@ -3,6 +3,7 @@ package xgin
 import (
 	"context"
 	"crypto/tls"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/adapter/xhttp/xgin/middleware"
@@ -95,6 +96,7 @@ func (g *XGin) Register(repos []application.Service) application.XHttp {
 		g.mux.Use(middleware.GinLogFormatter())
 	}
 	// 使用中间件
+	g.mux.Use(cors.Default())
 	g.mux.Use(middleware.Tracer())
 	for _, v := range repos {
 		t := reflect.TypeOf(v)

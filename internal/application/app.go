@@ -6,6 +6,7 @@ import (
 	"github.com/olongfen/go-ddd-hex/config"
 	"github.com/olongfen/go-ddd-hex/internal/domain/aggregate"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
+	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/service"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
@@ -14,10 +15,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
-	"github.com/uber/jaeger-client-go/log/zap"
-	"github.com/uber/jaeger-lib/metrics"
+	jaegerlog "github.com/uber/jaeger-client-go/log"
+	"github.com/uber/jaeger-lib/metrics/prometheus"
+	"gorm.io/gorm"
 	"io"
-	"os"
 	"reflect"
 )
 
@@ -28,6 +29,14 @@ var (
 func init() {
 	App.Ctx, App.Cancel = utils.NewWaitGroupCtx()
 	cfg := config.GetConfig()
+	db.RegisterInjector(func(db *gorm.DB) {
+		if config.GetConfig().AutoMigrate {
+			err := db.AutoMigrate(&entity.User{}, &entity.Post{})
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+	})
 	// 数据库初始化
 	App.SetDatabase(db.NewDatabase(&cfg.DBConfig))
 	App.Connect()
@@ -146,40 +155,23 @@ func (a *Application) SetDatabase(d Database) *Application {
 
 func (a *Application) setTrace() (err error) {
 	cfg := config.GetConfig()
-	defer func() {
-		a.Tracer = opentracing.GlobalTracer()
-	}()
-	isSet := func(env string) bool {
-		_, ok := os.LookupEnv(env)
-		return ok
-	}
-
-	if !(isSet("JAEGER_AGENT_HOST") ||
-		isSet("JAEGER_ENDPOINT")) {
-		println("wwwwwwwwwwwwwwwww")
-		return
-	}
 	var (
-		jaegerCfg *jaegercfg.Configuration
-		closer    io.Closer
+		closer io.Closer
 	)
-	if jaegerCfg, err = jaegercfg.FromEnv(); err != nil {
-		return
-	}
-	if cfg.Debug {
-		jaegerCfg.Sampler.Type = jaeger.SamplerTypeConst
-		jaegerCfg.Sampler.Param = 1
-		jaegerCfg.Reporter.LogSpans = true
-	}
-	jMetricsFactory := metrics.NullFactory
-
-	// Initialize tracer with Application logger and Application metrics factory
-	if closer, err = jaegerCfg.InitGlobalTracer(cfg.APPName, jaegercfg.Logger(zap.NewLogger(nil)),
+	jaegerCfg := &jaegercfg.Configuration{
+		ServiceName: cfg.APPName,
+		Reporter: &jaegercfg.ReporterConfig{LogSpans: true,
+			CollectorEndpoint: "http://127.0.0.1:14268/api/traces",
+		},
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  jaeger.SamplerTypeConst,
+			Param: 1}}
+	jMetricsFactory := prometheus.New()
+	jLogger := jaegerlog.StdLogger
+	if a.Tracer, closer, err = jaegerCfg.NewTracer(jaegercfg.Logger(jLogger),
 		jaegercfg.Metrics(jMetricsFactory)); err != nil {
-		log.Errorf("Could not initialize jaeger tracer: %s", err.Error())
-		return
+		log.Fatal(err)
 	}
-	jaegerCfg.NewTracer()
 	wg := utils.GetWaitGroupInCtx(a.Ctx)
 	wg.Add(1)
 	go func() {
