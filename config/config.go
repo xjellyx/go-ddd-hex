@@ -21,6 +21,7 @@ type Config struct {
 	HttpPort        string
 	GrpcGatewayPort string
 	GrpcPort        string
+	JaegerEndpoint  string
 	Debug           bool // debug log
 	// https
 	TlsCert string

@@ -42,7 +42,6 @@ func (g *XGin) Run() {
 	}
 
 	var startFn func()
-
 	if g.cfg.TlsCert != "" && g.cfg.TlsKey != "" {
 		// https
 		startFn = func() {

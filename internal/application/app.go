@@ -12,11 +12,12 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	"github.com/opentracing/opentracing-go"
+	prometheus "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
 	jaegerlog "github.com/uber/jaeger-client-go/log"
-	"github.com/uber/jaeger-lib/metrics/prometheus"
+	jprom "github.com/uber/jaeger-lib/metrics/prometheus"
 	"gorm.io/gorm"
 	"io"
 	"reflect"
@@ -161,12 +162,12 @@ func (a *Application) setTrace() (err error) {
 	jaegerCfg := &jaegercfg.Configuration{
 		ServiceName: cfg.APPName,
 		Reporter: &jaegercfg.ReporterConfig{LogSpans: true,
-			CollectorEndpoint: "http://127.0.0.1:14268/api/traces",
+			CollectorEndpoint: cfg.JaegerEndpoint,
 		},
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1}}
-	jMetricsFactory := prometheus.New()
+	jMetricsFactory := jprom.New(jprom.WithRegisterer(prometheus.NewPedanticRegistry()))
 	jLogger := jaegerlog.StdLogger
 	if a.Tracer, closer, err = jaegerCfg.NewTracer(jaegercfg.Logger(jLogger),
 		jaegercfg.Metrics(jMetricsFactory)); err != nil {

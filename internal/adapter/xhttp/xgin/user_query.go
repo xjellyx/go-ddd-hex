@@ -18,7 +18,6 @@ func (u *UserQueryCtl) Get(ctx *gin.Context) {
 		res *vo.UserRes
 		err error
 	)
-
 	defer func() {
 		if err != nil {
 			response.NewGinResponse(ctx).Fail(response.CodeFail, err).Response()
