@@ -14,7 +14,7 @@ dbconfig:
 debug: true
 grpcgatewayport: "8300"
 grpcport: "8200"
-httpport: "8101"
+httpport: "8100"
 jaegerendpoint: http://192.168.3.85:14268/api/traces
 run_mode: unit_test
 tlskey: "8300"
