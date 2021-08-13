@@ -3,8 +3,8 @@ package middleware
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/opentracing-contrib/go-gin/ginhttp"
+	"github.com/opentracing/opentracing-go"
 )
 
 func GinLogFormatter() gin.HandlerFunc {
@@ -18,5 +18,5 @@ latency: %s, body: %v %v`, params.ClientIP, params.TimeStamp.Format("2006-01-02 
 }
 
 func Tracer() gin.HandlerFunc {
-	return ginhttp.Middleware(application.App.Tracer)
+	return ginhttp.Middleware(opentracing.GlobalTracer())
 }

@@ -10,16 +10,11 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/domain/service"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
+	"github.com/olongfen/go-ddd-hex/internal/infra/tracer"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	"github.com/opentracing/opentracing-go"
-	prometheus "github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-	"github.com/uber/jaeger-client-go"
-	jaegercfg "github.com/uber/jaeger-client-go/config"
-	jaegerlog "github.com/uber/jaeger-client-go/log"
-	jprom "github.com/uber/jaeger-lib/metrics/prometheus"
 	"gorm.io/gorm"
-	"io"
 	"reflect"
 )
 
@@ -41,9 +36,20 @@ func init() {
 	// 数据库初始化
 	App.SetDatabase(db.NewDatabase(&cfg.DBConfig))
 	App.Connect()
-	if err := App.setTrace(); err != nil {
-		log.Fatal(err)
-	}
+
+	// 初始化链路追踪
+	t := tracer.GetHandlerTracer()
+	opentracing.SetGlobalTracer(t.Tracer)
+	wg := utils.GetWaitGroupInCtx(App.Ctx)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		<-App.Ctx.Done()
+		if err := t.Closer.Close(); err != nil {
+			log.Errorln(err)
+		}
+		log.Infoln("trace close")
+	}()
 }
 
 // UserInterface user 用户服务接口
@@ -78,15 +84,8 @@ type Service interface {
 
 // Application 应用程序入口
 type Application struct {
-	Ctx    context.Context
-	Cancel context.CancelFunc
-	/*
-		根据环境变量配置jaeger，参考 https://github.com/jaegertracing/jaeger-client-go#environment-variables
-
-		JAEGER_AGENT_HOST
-		JAEGER_AGENT_PORT
-	*/
-	Tracer   opentracing.Tracer
+	Ctx      context.Context
+	Cancel   context.CancelFunc
 	repos    []Repository
 	services []Service
 	XHttp
@@ -152,37 +151,4 @@ func (a *Application) SetXHttp(x XHttp) *Application {
 func (a *Application) SetDatabase(d Database) *Application {
 	a.Database = d
 	return a
-}
-
-func (a *Application) setTrace() (err error) {
-	cfg := config.GetConfig()
-	var (
-		closer io.Closer
-	)
-	jaegerCfg := &jaegercfg.Configuration{
-		ServiceName: cfg.APPName,
-		Reporter: &jaegercfg.ReporterConfig{LogSpans: true,
-			CollectorEndpoint: cfg.JaegerEndpoint,
-		},
-		Sampler: &jaegercfg.SamplerConfig{
-			Type:  jaeger.SamplerTypeConst,
-			Param: 1}}
-	jMetricsFactory := jprom.New(jprom.WithRegisterer(prometheus.NewPedanticRegistry()))
-	jLogger := jaegerlog.StdLogger
-	if a.Tracer, closer, err = jaegerCfg.NewTracer(jaegercfg.Logger(jLogger),
-		jaegercfg.Metrics(jMetricsFactory)); err != nil {
-		log.Fatal(err)
-	}
-	opentracing.SetGlobalTracer(a.Tracer)
-	wg := utils.GetWaitGroupInCtx(a.Ctx)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		<-a.Ctx.Done()
-		if err = closer.Close(); err != nil {
-			log.Errorln(err)
-		}
-		log.Infoln("trace close")
-	}()
-	return
 }

@@ -106,8 +106,9 @@ func registerCallback(db *gorm.DB) {
 // 包内静态变量
 const gormSpanKey = "__gorm_span"
 const (
-	callBackBeforeName = "opentracing:before"
-	callBackAfterName  = "opentracing:after"
+	RepositoryMethodCtxTag = "repository_method"
+	callBackBeforeName     = "opentracing:before"
+	callBackAfterName      = "opentracing:after"
 )
 
 type OpentracingPlugin struct{}
@@ -139,7 +140,11 @@ func (op *OpentracingPlugin) Name() string {
 }
 
 func before(db *gorm.DB) {
-	span, _ := opentracing.StartSpanFromContext(db.Statement.Context, "gorm")
+	val, ok := db.Statement.Context.Value(RepositoryMethodCtxTag).(string)
+	if !ok {
+		val = "gorm"
+	}
+	span, _ := opentracing.StartSpanFromContext(db.Statement.Context, val)
 	// 利用db实例去传递span
 	db.InstanceSet(gormSpanKey, span)
 }

@@ -35,6 +35,7 @@ func (u *postRepo) Get(ctx context.Context, id string) (res *entity.Post, err er
 	var (
 		data = new(entity.Post)
 	)
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Get")
 	if err = u.db.WithContext(ctx).Model(&entity.Post{}).Where("id = ?", id).First(data).Error; err != nil {
 		return
 	}
@@ -44,6 +45,7 @@ func (u *postRepo) Get(ctx context.Context, id string) (res *entity.Post, err er
 }
 
 func (u *postRepo) Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) (res []*entity.Post, err error) {
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Find")
 	withContext := u.db.WithContext(ctx)
 	if err = withContext.Where(cond).Offset(meta.Offset()).Limit(meta.Limit()).Find(&res).Error; err != nil {
 		return
@@ -52,10 +54,12 @@ func (u *postRepo) Find(ctx context.Context, cond map[string]interface{}, meta *
 }
 
 func (u *postRepo) Create(ctx context.Context, Post *entity.Post) error {
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Create")
 	return u.db.WithContext(ctx).Create(Post).Error
 }
 
 func (u *postRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Update")
 	if err := u.db.WithContext(ctx).Model(&entity.Post{}).Where(cond).Updates(change).Error; err != nil {
 		return err
 	}
@@ -63,5 +67,6 @@ func (u *postRepo) Update(ctx context.Context, cond map[string]interface{}, chan
 }
 
 func (u *postRepo) Delete(ctx context.Context, cond map[string]interface{}) error {
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Delete")
 	return u.db.WithContext(ctx).Model(&entity.Post{}).Delete(cond).Error
 }
