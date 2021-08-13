@@ -20,11 +20,11 @@ func NewUserRepo(ctx context.Context, database application.Database) *userRepo {
 	return &userRepo{db: database.DB(ctx).(*gorm.DB)}
 }
 
-func (u *userRepo) Get(id string) (res *entity.User, err error) {
+func (u *userRepo) Get(ctx context.Context, id string) (res *entity.User, err error) {
 	var (
 		data = new(entity.User)
 	)
-	if err = u.db.Model(&entity.User{}).Where("id = ?", id).First(data).Error; err != nil {
+	if err = u.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).First(data).Error; err != nil {
 		return
 	}
 
@@ -32,25 +32,26 @@ func (u *userRepo) Get(id string) (res *entity.User, err error) {
 	return
 }
 
-func (u *userRepo) Find(cond map[string]interface{}, meta *query.Meta) (res []*entity.User, err error) {
-	meta.WithOffsetLimit(u.db)
-	if err = u.db.Where(cond).Find(&res).Error; err != nil {
+func (u *userRepo) Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) (res []*entity.User, err error) {
+	withContext := u.db.WithContext(ctx)
+	meta.WithOffsetLimit(withContext)
+	if err = withContext.WithContext(ctx).Where(cond).Find(&res).Error; err != nil {
 		return
 	}
-	return nil, nil
+	return
 }
 
-func (u *userRepo) Create(user *entity.User) error {
-	return u.db.Create(user).Error
+func (u *userRepo) Create(ctx context.Context, user *entity.User) error {
+	return u.db.WithContext(ctx).Create(user).Error
 }
 
-func (u *userRepo) Update(cond map[string]interface{}, change interface{}) error {
-	if err := u.db.Model(&entity.User{}).Where(cond).Updates(change).Error; err != nil {
+func (u *userRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
+	if err := u.db.WithContext(ctx).Model(&entity.User{}).Where(cond).Updates(change).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *userRepo) Delete(cond map[string]interface{}) error {
-	return u.db.Model(&entity.User{}).Delete(cond).Error
+func (u *userRepo) Delete(ctx context.Context, cond map[string]interface{}) error {
+	return u.db.WithContext(ctx).Model(&entity.User{}).Delete(cond).Error
 }

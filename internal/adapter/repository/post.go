@@ -31,11 +31,11 @@ func NewPostRepo(ctx context.Context, database application.Database) *postRepo {
 	return &postRepo{db: database.DB(ctx).(*gorm.DB)}
 }
 
-func (u *postRepo) Get(id string) (res *entity.Post, err error) {
+func (u *postRepo) Get(ctx context.Context, id string) (res *entity.Post, err error) {
 	var (
 		data = new(entity.Post)
 	)
-	if err = u.db.Model(&entity.Post{}).Where("id = ?", id).First(data).Error; err != nil {
+	if err = u.db.WithContext(ctx).Model(&entity.Post{}).Where("id = ?", id).First(data).Error; err != nil {
 		return
 	}
 
@@ -43,25 +43,26 @@ func (u *postRepo) Get(id string) (res *entity.Post, err error) {
 	return
 }
 
-func (u *postRepo) Find(cond map[string]interface{}, meta *query.Meta) (res []*entity.Post, err error) {
-	meta.WithOffsetLimit(u.db)
-	if err = u.db.Where(cond).Find(&res).Error; err != nil {
+func (u *postRepo) Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) (res []*entity.Post, err error) {
+	withContext := u.db.WithContext(ctx)
+	meta.WithOffsetLimit(withContext)
+	if err = withContext.Where(cond).Find(&res).Error; err != nil {
 		return
 	}
-	return nil, nil
+	return
 }
 
-func (u *postRepo) Create(Post *entity.Post) error {
-	return u.db.Create(Post).Error
+func (u *postRepo) Create(ctx context.Context, Post *entity.Post) error {
+	return u.db.WithContext(ctx).Create(Post).Error
 }
 
-func (u *postRepo) Update(cond map[string]interface{}, change interface{}) error {
-	if err := u.db.Model(&entity.Post{}).Where(cond).Updates(change).Error; err != nil {
+func (u *postRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
+	if err := u.db.WithContext(ctx).Model(&entity.Post{}).Where(cond).Updates(change).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *postRepo) Delete(cond map[string]interface{}) error {
-	return u.db.Model(&entity.Post{}).Delete(cond).Error
+func (u *postRepo) Delete(ctx context.Context, cond map[string]interface{}) error {
+	return u.db.WithContext(ctx).Model(&entity.Post{}).Delete(cond).Error
 }

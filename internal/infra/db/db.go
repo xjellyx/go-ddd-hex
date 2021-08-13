@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/olongfen/go-ddd-hex/config"
+	"github.com/opentracing/opentracing-go"
+	tracerLog "github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -67,6 +69,7 @@ func (d *Database) Connect() {
 	}); err != nil {
 		logrus.Fatal(err)
 	}
+	d.db.Use(&OpentracingPlugin{})
 	if idb, err = d.db.DB(); err != nil {
 		logrus.Fatal(err)
 	}
@@ -98,4 +101,66 @@ func registerCallback(db *gorm.DB) {
 	if err != nil {
 		logrus.Panicf("err: %+v", err)
 	}
+}
+
+// 包内静态变量
+const gormSpanKey = "__gorm_span"
+const (
+	callBackBeforeName = "opentracing:before"
+	callBackAfterName  = "opentracing:after"
+)
+
+type OpentracingPlugin struct{}
+
+// 告诉编译器这个结构体实现了gorm.Plugin接口
+var _ gorm.Plugin = &OpentracingPlugin{}
+
+func (op *OpentracingPlugin) Initialize(db *gorm.DB) (err error) {
+	// 开始前 - 并不是都用相同的方法，可以自己自定义
+	db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, before)
+	db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, before)
+	db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, before)
+	db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, before)
+	db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, before)
+	db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, before)
+
+	// 结束后 - 并不是都用相同的方法，可以自己自定义
+	db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, after)
+	db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, after)
+	db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, after)
+	db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, after)
+	db.Callback().Row().After("gorm:row").Register(callBackAfterName, after)
+	db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, after)
+	return
+}
+
+func (op *OpentracingPlugin) Name() string {
+	return "opentracingPlugin"
+}
+
+func before(db *gorm.DB) {
+	span, _ := opentracing.StartSpanFromContext(db.Statement.Context, "gorm")
+	// 利用db实例去传递span
+	db.InstanceSet(gormSpanKey, span)
+}
+
+func after(db *gorm.DB) {
+	_span, exist := db.InstanceGet(gormSpanKey)
+	if !exist {
+		return
+	}
+	// 断言类型
+	span, ok := _span.(opentracing.Span)
+	if !ok {
+		return
+	}
+
+	defer span.Finish()
+
+	if db.Error != nil {
+		span.LogFields(tracerLog.Error(db.Error))
+	}
+
+	span.LogFields(tracerLog.String("sql", db.Dialector.Explain(db.Statement.SQL.String(), db.Statement.Vars...)))
+
 }

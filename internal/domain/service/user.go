@@ -1,9 +1,12 @@
 package service
 
 import (
+	"context"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,11 +19,11 @@ func NewUserService(txImpl dependency.Transaction, repo dependency.UserRepo) *us
 	return &userService{repo: repo, txImpl: txImpl}
 }
 
-func (u *userService) Get(id string) (res *vo.UserRes, err error) {
+func (u *userService) Get(ctx context.Context, id string) (res *vo.UserRes, err error) {
 	var (
 		data *entity.User
 	)
-	if data, err = u.repo.Get(id); err != nil {
+	if data, err = u.repo.Get(ctx, id); err != nil {
 		return
 	}
 	res = new(vo.UserRes)
@@ -32,11 +35,18 @@ func (u *userService) Get(id string) (res *vo.UserRes, err error) {
 	return
 }
 
-func (u *userService) ChangePassword(id string, oldPwd, newPwd string) (err error) {
+func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) (err error) {
 	var (
 		data *entity.User
 	)
-	if data, err = u.repo.Get(id); err != nil {
+	span, _ := opentracing.StartSpanFromContext(ctx, "userService-ChangePassword")
+	defer func() {
+		if err != nil {
+			span.LogFields(log.Error(err))
+		}
+		span.Finish()
+	}()
+	if data, err = u.repo.Get(ctx, id); err != nil {
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(data.Password.String), []byte(oldPwd)); err != nil {
@@ -48,7 +58,7 @@ func (u *userService) ChangePassword(id string, oldPwd, newPwd string) (err erro
 		return
 	}
 	data.Password.SetValid(string(_n))
-	if err = u.repo.Update(data.QueryCond(), map[string]interface{}{"password": data.Password.String}); err != nil {
+	if err = u.repo.Update(ctx, data.QueryCond(), map[string]interface{}{"password": data.Password.String}); err != nil {
 		return
 	}
 

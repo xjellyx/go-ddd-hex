@@ -37,75 +37,75 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUserRepo) Create(user *entity.User) error {
+func (m *MockUserRepo) Create(ctx context.Context, user *entity.User) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", user)
+	ret := m.ctrl.Call(m, "Create", ctx, user)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockUserRepoMockRecorder) Create(user interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Create(ctx, user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepo)(nil).Create), user)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepo)(nil).Create), ctx, user)
 }
 
 // Delete mocks base method.
-func (m *MockUserRepo) Delete(cond map[string]interface{}) error {
+func (m *MockUserRepo) Delete(ctx context.Context, cond map[string]interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", cond)
+	ret := m.ctrl.Call(m, "Delete", ctx, cond)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockUserRepoMockRecorder) Delete(cond interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Delete(ctx, cond interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepo)(nil).Delete), cond)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepo)(nil).Delete), ctx, cond)
 }
 
 // Find mocks base method.
-func (m *MockUserRepo) Find(cond map[string]interface{}, meta *query.Meta) ([]*entity.User, error) {
+func (m *MockUserRepo) Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) ([]*entity.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Find", cond, meta)
+	ret := m.ctrl.Call(m, "Find", ctx, cond, meta)
 	ret0, _ := ret[0].([]*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Find indicates an expected call of Find.
-func (mr *MockUserRepoMockRecorder) Find(cond, meta interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Find(ctx, cond, meta interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepo)(nil).Find), cond, meta)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockUserRepo)(nil).Find), ctx, cond, meta)
 }
 
 // Get mocks base method.
-func (m *MockUserRepo) Get(id string) (*entity.User, error) {
+func (m *MockUserRepo) Get(ctx context.Context, id string) (*entity.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", id)
+	ret := m.ctrl.Call(m, "Get", ctx, id)
 	ret0, _ := ret[0].(*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockUserRepoMockRecorder) Get(id interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepo)(nil).Get), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepo)(nil).Get), ctx, id)
 }
 
 // Update mocks base method.
-func (m *MockUserRepo) Update(cond map[string]interface{}, change interface{}) error {
+func (m *MockUserRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", cond, change)
+	ret := m.ctrl.Call(m, "Update", ctx, cond, change)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockUserRepoMockRecorder) Update(cond, change interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Update(ctx, cond, change interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepo)(nil).Update), cond, change)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepo)(nil).Update), ctx, cond, change)
 }
 
 // MockTransaction is a mock of Transaction interface.

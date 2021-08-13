@@ -21,9 +21,9 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "14250:14250"
-#      - "9411:9411"
-#    environment:
-#      - COLLECTOR_ZIPKIN_HOST_PORT=":9411"
+      - "9411:9411"
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT="9411"
   ddd_hex:
     image: centos:latest
     restart: unless-stopped

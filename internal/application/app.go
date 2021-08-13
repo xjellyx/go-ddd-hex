@@ -48,13 +48,13 @@ func init() {
 
 // UserInterface user 用户服务接口
 type UserInterface interface {
-	ChangePassword(id string, oldPwd, newPwd string) error
-	Get(id string) (res *vo.UserRes, err error)
+	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
+	Get(ctx context.Context, id string) (res *vo.UserRes, err error)
 }
 
 // PostInterface post 服务接口
 type PostInterface interface {
-	GetByUserID(userID string) (*aggregate.QueryUserPostRes, error)
+	GetByUserID(ctx context.Context, userID string) (*aggregate.QueryUserPostRes, error)
 }
 
 // XHttp  http 接口
@@ -173,6 +173,7 @@ func (a *Application) setTrace() (err error) {
 		jaegercfg.Metrics(jMetricsFactory)); err != nil {
 		log.Fatal(err)
 	}
+	opentracing.SetGlobalTracer(a.Tracer)
 	wg := utils.GetWaitGroupInCtx(a.Ctx)
 	wg.Add(1)
 	go func() {

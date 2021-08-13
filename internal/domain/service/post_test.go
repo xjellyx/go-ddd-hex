@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/lib/query"
@@ -20,16 +21,17 @@ func TestPostService_GetByUserID(t *testing.T) {
 	defer ctl.Finish()
 
 	postRepo = post.NewMockPostRepo(ctl)
-	postRepo.EXPECT().Find(map[string]interface{}{
+	ctx := context.Background()
+	postRepo.EXPECT().Find(ctx, map[string]interface{}{
 		"user_uuid": "1",
 	}, &query.Meta{PageNum: 1, PageSize: 10}).Return([]*entity.Post{
 		{Title: "test_title"},
 	}, nil)
 	userRepo = user.NewMockUserRepo(ctl)
-	userRepo.EXPECT().Get("1").Return(&entity.User{Username: "test"}, nil)
+	userRepo.EXPECT().Get(ctx, "1").Return(&entity.User{Username: "test"}, nil)
 	txmlRepo = user.NewMockTransaction(ctl)
 	p := NewPostService(txmlRepo, postRepo, userRepo)
-	if data, err := p.GetByUserID("1"); err != nil {
+	if data, err := p.GetByUserID(ctx, "1"); err != nil {
 		t.Fatal(err)
 	} else {
 		assert.Equal(t, len(data.Posts), 1)

@@ -7,11 +7,11 @@ import (
 )
 
 type UserRepo interface {
-	Get(id string) (*entity.User, error)
-	Find(cond map[string]interface{}, meta *query.Meta) ([]*entity.User, error)
-	Create(user *entity.User) error
-	Update(cond map[string]interface{}, change interface{}) error
-	Delete(cond map[string]interface{}) error
+	Get(ctx context.Context, id string) (*entity.User, error)
+	Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) ([]*entity.User, error)
+	Create(ctx context.Context, user *entity.User) error
+	Update(ctx context.Context, cond map[string]interface{}, change interface{}) error
+	Delete(ctx context.Context, cond map[string]interface{}) error
 }
 
 type Transaction interface {
