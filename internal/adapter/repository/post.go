@@ -45,8 +45,7 @@ func (u *postRepo) Get(ctx context.Context, id string) (res *entity.Post, err er
 
 func (u *postRepo) Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) (res []*entity.Post, err error) {
 	withContext := u.db.WithContext(ctx)
-	meta.WithOffsetLimit(withContext)
-	if err = withContext.Where(cond).Find(&res).Error; err != nil {
+	if err = withContext.Where(cond).Offset(meta.Offset()).Limit(meta.Limit()).Find(&res).Error; err != nil {
 		return
 	}
 	return
