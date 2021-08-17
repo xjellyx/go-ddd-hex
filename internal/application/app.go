@@ -55,7 +55,7 @@ func init() {
 // UserInterface user 用户服务接口
 type UserInterface interface {
 	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
-	Get(ctx context.Context, id string) (res *vo.UserRes, err error)
+	Get(ctx context.Context, id string) (res *vo.UserVO, err error)
 }
 
 // PostInterface post 服务接口

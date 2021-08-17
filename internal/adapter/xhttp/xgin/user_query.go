@@ -15,7 +15,7 @@ type UserQueryCtl struct {
 func (u *UserQueryCtl) Get(ctx *gin.Context) {
 	var (
 		id  string
-		res *vo.UserRes
+		res *vo.UserVO
 		err error
 	)
 	defer func() {

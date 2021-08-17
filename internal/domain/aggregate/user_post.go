@@ -15,8 +15,8 @@ type UserPostFactory struct {
 }
 
 type QueryUserPostRes struct {
-	User  vo.UserRes   `json:"user"`
-	Posts []vo.PostRes `json:"posts"`
+	User  vo.UserVO   `json:"user"`
+	Posts []vo.PostVO `json:"posts"`
 }
 
 func NewUserPostFactory(postRepo dependency.PostRepo,
@@ -40,21 +40,10 @@ func (f *UserPostFactory) UserPostQuery(ctx context.Context, userId string) (res
 	}
 
 	res = new(QueryUserPostRes)
-	res.User.Username = data.Username
-	res.User.Nickname = data.Nickname.String
-	res.User.IsAdmin = data.IsAdmin.Bool
-	res.User.CreatedAt = data.CreatedAt
-	res.User.UpdatedAt = data.UpdatedAt
+	res.User = *vo.UserEntity2VO(data)
 	for _, v := range dataPost {
-		d := vo.PostRes{
-			BaseRes: vo.BaseRes{
-				CreatedAt: v.CreatedAt,
-				UpdatedAt: v.UpdatedAt,
-			},
-			Title:   v.Title,
-			Content: v.Content,
-		}
-		res.Posts = append(res.Posts, d)
+		d := vo.PostEntity2VO(v)
+		res.Posts = append(res.Posts, *d)
 
 	}
 	return

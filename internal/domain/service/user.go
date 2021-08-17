@@ -19,19 +19,14 @@ func NewUserService(txImpl dependency.Transaction, repo dependency.UserRepo) *us
 	return &userService{repo: repo, txImpl: txImpl}
 }
 
-func (u *userService) Get(ctx context.Context, id string) (res *vo.UserRes, err error) {
+func (u *userService) Get(ctx context.Context, id string) (res *vo.UserVO, err error) {
 	var (
 		data *entity.User
 	)
 	if data, err = u.repo.Get(ctx, id); err != nil {
 		return
 	}
-	res = new(vo.UserRes)
-	res.Username = data.Username
-	res.Nickname = data.Nickname.String
-	res.IsAdmin = data.IsAdmin.Bool
-	res.CreatedAt = data.CreatedAt
-	res.UpdatedAt = data.UpdatedAt
+	res = vo.UserEntity2VO(data)
 	return
 }
 
