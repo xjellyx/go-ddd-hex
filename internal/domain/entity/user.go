@@ -3,6 +3,7 @@ package entity
 import (
 	"github.com/guregu/null"
 	uuid "github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -40,17 +41,24 @@ func (u *User) SetUsername(username string) *User {
 }
 
 func (u *User) SetNickname(val string) *User {
-	u.Nickname.SetValid(val)
+	if len(val) > 0 {
+		u.Nickname.SetValid(val)
+	}
 	return u
 }
 
 func (u *User) SetPassword(val string) *User {
-	u.Password.SetValid(val)
+	if len(val) > 0 {
+		hash, _ := bcrypt.GenerateFromPassword([]byte(val), bcrypt.DefaultCost)
+		u.Password.SetValid(string(hash))
+	}
 	return u
 }
 
-func (u *User) SetIsAdmin(val bool) *User {
-	u.IsAdmin.SetValid(val)
+func (u *User) SetIsAdmin(val *bool) *User {
+	if val != nil {
+		u.IsAdmin.SetValid(*val)
+	}
 	return u
 }
 

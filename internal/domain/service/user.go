@@ -47,12 +47,13 @@ func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, new
 	if err = bcrypt.CompareHashAndPassword([]byte(data.Password.String), []byte(oldPwd)); err != nil {
 		return
 	}
-	_n, _err := bcrypt.GenerateFromPassword([]byte(newPwd), bcrypt.DefaultCost)
-	if _err != nil {
-		err = _err
-		return
-	}
-	data.Password.SetValid(string(_n))
+	//_n, _err := bcrypt.GenerateFromPassword([]byte(newPwd), bcrypt.DefaultCost)
+	//if _err != nil {
+	//	err = _err
+	//	return
+	//}
+	//data.Password.SetValid(string(_n))
+	data.SetPassword(newPwd)
 	if err = u.repo.Update(ctx, data.QueryCond(), map[string]interface{}{"password": data.Password.String}); err != nil {
 		return
 	}
