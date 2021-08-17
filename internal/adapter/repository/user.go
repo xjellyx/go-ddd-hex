@@ -14,7 +14,7 @@ type userRepo struct {
 }
 
 func init() {
-	application.App.AppendRepo(NewUserRepo(application.App.Ctx, application.App.Database))
+	application.App.AppendRepo(NewUserRepo(application.App.Ctx, application.App.GetDB()))
 }
 
 func NewUserRepo(ctx context.Context, database application.Database) *userRepo {

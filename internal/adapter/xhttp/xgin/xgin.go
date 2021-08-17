@@ -32,7 +32,7 @@ func init() {
 		cfg: config.GetConfig(),
 		mux: gin.Default(),
 	}
-	application.App.SetXHttp(g)
+	application.App.SetHttp(g)
 }
 
 func (g *XGin) Run() {
@@ -69,20 +69,17 @@ func (g *XGin) Run() {
 	}
 
 	go startFn()
-
 	wg := utils.GetWaitGroupInCtx(g.ctx)
 	wg.Add(1)
 	defer wg.Done()
 	<-g.ctx.Done()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Errorf("server shutdown err: %+v", err)
 		return
 	}
-	log.Info("http server shutdown")
-
+	log.Info("HTTP Server Shutdown...")
 }
 
 func (g *XGin) Register(repos []application.Service) application.XHttp {

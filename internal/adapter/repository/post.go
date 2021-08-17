@@ -16,7 +16,7 @@ type postRepo struct {
 }
 
 func init() {
-	application.App.AppendRepo(NewPostRepo(application.App.Ctx, application.App.Database))
+	application.App.AppendRepo(NewPostRepo(application.App.Ctx, application.App.GetDB()))
 	db.RegisterInjector(func(db *gorm.DB) {
 		if config.GetConfig().AutoMigrate {
 			err := db.AutoMigrate(&entity.Post{})

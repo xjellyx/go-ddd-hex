@@ -7,5 +7,6 @@ import (
 )
 
 func main() {
+	defer application.App.Cancel()
 	application.App.InjectServices().Run()
 }

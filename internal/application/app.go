@@ -15,7 +15,12 @@ import (
 	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"os"
+	"os/signal"
 	"reflect"
+	"sync/atomic"
+	"syscall"
+	"time"
 )
 
 var (
@@ -35,8 +40,7 @@ func init() {
 	})
 	// 数据库初始化
 	App.SetDatabase(db.NewDatabase(&cfg.DBConfig))
-	App.Connect()
-
+	App.db.Connect()
 	// 初始化链路追踪
 	t := tracer.GetHandlerTracer()
 	opentracing.SetGlobalTracer(t.Tracer)
@@ -48,7 +52,7 @@ func init() {
 		if err := t.Closer.Close(); err != nil {
 			log.Errorln(err)
 		}
-		log.Infoln("trace close")
+		log.Infoln("Trace Close...")
 	}()
 }
 
@@ -88,8 +92,8 @@ type Application struct {
 	Cancel   context.CancelFunc
 	repos    []Repository
 	services []Service
-	XHttp
-	Database
+	http     XHttp
+	db       Database
 }
 
 func checkRepo(repo Repository) (err error) {
@@ -131,7 +135,7 @@ func (a *Application) InjectServices() *Application {
 	postService = service.NewPostService(db.NewTxImpl(), postRepo, userRepo)
 	a.services = append(a.services, userService)
 	a.services = append(a.services, postService)
-	a.Register(a.services)
+	a.http.Register(a.services)
 	return a
 }
 
@@ -141,14 +145,46 @@ func (a *Application) AppendRepo(repo Repository) *Application {
 	return a
 }
 
-// SetXHttp 设置http适配器
-func (a *Application) SetXHttp(x XHttp) *Application {
-	a.XHttp = x
+// SetHttp 设置http适配器
+func (a *Application) SetHttp(x XHttp) *Application {
+	a.http = x
 	return a
 }
 
 // SetDatabase 设置数据库基础组件
 func (a *Application) SetDatabase(d Database) *Application {
-	a.Database = d
+	a.db = d
 	return a
+}
+
+// GetDB 设置数据库基础组件
+func (a *Application) GetDB() Database {
+	return a.db
+}
+
+func (a *Application) Run() {
+
+	go App.http.Run()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)
+
+	var state int32 = 1
+EXIT:
+	for {
+		sig := <-quit
+		App.Cancel()
+		log.Printf("signal[%s]\n", sig.String())
+		switch sig {
+		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
+			atomic.StoreInt32(&state, 0)
+			break EXIT
+		case syscall.SIGHUP:
+		default:
+			break EXIT
+		}
+	}
+
+	log.Println("Program Exit...")
+	time.Sleep(time.Second)
+	os.Exit(int(atomic.LoadInt32(&state)))
 }
