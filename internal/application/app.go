@@ -173,6 +173,7 @@ EXIT:
 	for {
 		sig := <-quit
 		App.Cancel()
+		utils.GetWaitGroupInCtx(App.Ctx).Wait()
 		log.Printf("signal[%s]\n", sig.String())
 		switch sig {
 		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
