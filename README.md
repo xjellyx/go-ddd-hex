@@ -3,7 +3,7 @@
 - 六边形领域驱动
 ```
     六边形领域驱动模型也称为端口适配器模型，它分为外部和内部，内部包含application和domain层，外部包含适配器层，依赖关系为
-adapter->aplication->domain,domain层代码只像application层暴露。
+adapter->aplication->domain,domain层业务代码只向application层暴露。
    domain领域层：
        基本包含实体（entity）、值对象value object（vo）、聚合（aggregate）、依赖倒置（denpendency）、服务（sevice）实现业务逻辑（domain层
     里面如需其他业务可以自行扩展）。
