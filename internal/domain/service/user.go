@@ -10,31 +10,46 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type userService struct {
-	repo   dependency.UserRepo
-	txImpl dependency.Transaction
+type UserService struct {
+	repo dependency.UserRepo
 }
 
-func NewUserService(txImpl dependency.Transaction, repo dependency.UserRepo) *userService {
-	return &userService{repo: repo, txImpl: txImpl}
+func NewUserService(repo dependency.UserRepo) *UserService {
+	return &UserService{repo: repo}
 }
 
-func (u *userService) Get(ctx context.Context, id string) (res *vo.UserVO, err error) {
+func (u *UserService) Create(ctx context.Context, forms []*vo.UserVOForm) (res []*vo.UserVO, err error) {
 	var (
-		data *entity.User
+		data []*entity.User
 	)
-	if data, err = u.repo.Get(ctx, id); err != nil {
+	for _, v := range forms {
+		data = append(data, vo.UserVOForm2Entity(v))
+	}
+
+	span, _ := opentracing.StartSpanFromContext(ctx, "UserService-Create")
+	defer func() {
+		if err != nil {
+			span.LogFields(log.Error(err))
+		}
+		span.Finish()
+	}()
+	if err = u.repo.Create(ctx, data); err != nil {
 		return
 	}
-	res = vo.UserEntity2VO(data)
+
+	for _, v := range data {
+		res = append(res, vo.UserEntity2VO(v))
+	}
+
 	return
 }
 
-func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) (err error) {
+func (u *UserService) Get(ctx context.Context, id string) (res *vo.UserVO, err error) {
 	var (
 		data *entity.User
 	)
-	span, _ := opentracing.StartSpanFromContext(ctx, "userService-ChangePassword")
+	span, _ := opentracing.StartSpanFromContext(ctx, "UserService-Get")
+	span.SetTag("getUser", id)
 	defer func() {
 		if err != nil {
 			span.LogFields(log.Error(err))
@@ -44,8 +59,28 @@ func (u *userService) ChangePassword(ctx context.Context, id string, oldPwd, new
 	if data, err = u.repo.Get(ctx, id); err != nil {
 		return
 	}
-	if err = bcrypt.CompareHashAndPassword([]byte(data.Password.String), []byte(oldPwd)); err != nil {
+	res = vo.UserEntity2VO(data)
+	return
+}
+
+func (u *UserService) ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) (err error) {
+	var (
+		data *entity.User
+	)
+	span, _ := opentracing.StartSpanFromContext(ctx, "UserService-ChangePasswd")
+	defer func() {
+		if err != nil {
+			span.LogFields(log.Error(err))
+		}
+		span.Finish()
+	}()
+	if data, err = u.repo.Get(ctx, id); err != nil {
 		return
+	}
+	if data.Password.Ptr() != nil {
+		if err = bcrypt.CompareHashAndPassword([]byte(data.Password.String), []byte(oldPwd)); err != nil {
+			return
+		}
 	}
 	//_n, _err := bcrypt.GenerateFromPassword([]byte(newPwd), bcrypt.DefaultCost)
 	//if _err != nil {

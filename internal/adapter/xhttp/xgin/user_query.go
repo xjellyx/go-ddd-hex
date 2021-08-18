@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/internal/application"
 
-	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/lib/response"
 )
 
@@ -15,7 +14,7 @@ type UserQueryCtl struct {
 func (u *UserQueryCtl) Get(ctx *gin.Context) {
 	var (
 		id  string
-		res *vo.UserVO
+		res interface{}
 		err error
 	)
 	defer func() {
@@ -27,8 +26,13 @@ func (u *UserQueryCtl) Get(ctx *gin.Context) {
 	}()
 
 	id = ctx.Param("id")
-	if res, err = u.domain.Get(ctx.Request.Context(), id); err != nil {
+	data, _err := u.domain.Get(ctx.Request.Context(), id)
+	if _err != nil {
+		err = _err
 		return
 	}
+
+	res = data
+
 	return
 }

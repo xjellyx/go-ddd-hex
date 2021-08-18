@@ -1,7 +1,6 @@
 package db
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"github.com/olongfen/go-ddd-hex/config"
@@ -13,7 +12,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"reflect"
 )
 
 var (
@@ -33,20 +31,8 @@ func NewDatabase(cfg *config.DBConfig) *Database {
 	return globalDB
 }
 
-func (d *Database) DB(ctx context.Context) interface{} {
-	iface := ctx.Value(ctxTransactionKey{})
-
-	if iface != nil {
-		tx, ok := iface.(*gorm.DB)
-		if !ok {
-			logrus.Panicf("unexpect context value type: %s", reflect.TypeOf(tx))
-			return nil
-		}
-
-		return tx
-	}
-
-	return d.db.WithContext(ctx)
+func (d *Database) DB() interface{} {
+	return d.db
 }
 
 func (d *Database) Connect() {
@@ -65,11 +51,16 @@ func (d *Database) Connect() {
 
 	if d.db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger:         ormLogger,
+		PrepareStmt:    true,
 		NamingStrategy: schema.NamingStrategy{TablePrefix: "tb_"}, // 表明前缀
 	}); err != nil {
 		logrus.Fatal(err)
 	}
-	d.db.Use(&OpentracingPlugin{})
+	err = d.db.Use(&OpentracingPlugin{})
+	if err != nil {
+		logrus.Fatal(err)
+		return
+	}
 	if idb, err = d.db.DB(); err != nil {
 		logrus.Fatal(err)
 	}

@@ -97,7 +97,7 @@ func (mr *MockUserRepoMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 // Update mocks base method.
 func (m *MockUserRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, cond, change)
+	ret := m.ctrl.Call(m, "ChangePasswd", ctx, cond, change)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
@@ -105,7 +105,7 @@ func (m *MockUserRepo) Update(ctx context.Context, cond map[string]interface{}, 
 // Update indicates an expected call of Update.
 func (mr *MockUserRepoMockRecorder) Update(ctx, cond, change interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserRepo)(nil).Update), ctx, cond, change)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePasswd", reflect.TypeOf((*MockUserRepo)(nil).Update), ctx, cond, change)
 }
 
 // MockTransaction is a mock of Transaction interface.

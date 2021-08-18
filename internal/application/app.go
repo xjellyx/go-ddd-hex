@@ -17,14 +17,16 @@ import (
 	"gorm.io/gorm"
 	"os"
 	"os/signal"
-	"reflect"
 	"sync/atomic"
 	"syscall"
 	"time"
 )
 
 var (
-	App = new(Application)
+	// 告诉编译器接口是否实现
+	_   UserInterface = (*service.UserService)(nil)
+	_   PostInterface = (*service.PostService)(nil)
+	App               = new(Application)
 )
 
 func init() {
@@ -58,6 +60,7 @@ func init() {
 
 // UserInterface user 用户服务接口
 type UserInterface interface {
+	Create(ctx context.Context, forms []*vo.UserVOForm) (res []*vo.UserVO, err error)
 	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
 	Get(ctx context.Context, id string) (res *vo.UserVO, err error)
 }
@@ -76,14 +79,15 @@ type XHttp interface {
 // Database 数据库基础组件接口
 type Database interface {
 	Connect()
-	DB(ctx context.Context) interface{}
+	DB() interface{}
 }
-
-// Repository 存储库接口
-type Repository interface{}
 
 // Service service 服务接口
 type Service interface {
+}
+
+// Repository 存储库接口
+type Repository interface {
 }
 
 // Application 应用程序入口
@@ -113,14 +117,11 @@ func (a *Application) InjectServices() *Application {
 		postService PostInterface
 	)
 	for _, v := range a.repos {
-		t := reflect.TypeOf(v)
-		switch t.Elem().Name() {
-		case "userRepo":
+		switch v.(type) {
+		case dependency.UserRepo:
 			userRepo = v.(dependency.UserRepo)
-		case "postRepo":
-
+		case dependency.PostRepo:
 			postRepo = v.(dependency.PostRepo)
-
 		}
 	}
 	// 验证存储库是否已经初始化
@@ -131,8 +132,8 @@ func (a *Application) InjectServices() *Application {
 		log.Fatal(err)
 	}
 	// 注册服务
-	userService = service.NewUserService(db.NewTxImpl(), userRepo)
-	postService = service.NewPostService(db.NewTxImpl(), postRepo, userRepo)
+	userService = service.NewUserService(userRepo)
+	postService = service.NewPostService(postRepo, userRepo)
 	a.services = append(a.services, userService)
 	a.services = append(a.services, postService)
 	a.http.Register(a.services)

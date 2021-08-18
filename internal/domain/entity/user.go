@@ -12,7 +12,7 @@ type User struct {
 	gorm.Model
 	UUID     string      `gorm:"uniqueIndex;not null;type:varchar(36)"`
 	Username string      `gorm:"uniqueIndex;not null;type:varchar(36)"` // 用户名
-	Password null.String `gorm:"type:varchar(16)"`                      // 密码
+	Password null.String `gorm:"type:varchar(256)"`                     // 密码
 	Nickname null.String `gorm:"type:varchar(36)"`                      // 昵称
 	IsAdmin  null.Bool   `gorm:"default: false"`                        // true：是管理员
 }

@@ -6,14 +6,20 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/config"
+	_ "github.com/olongfen/go-ddd-hex/docs"
 	"github.com/olongfen/go-ddd-hex/internal/adapter/xhttp/xgin/middleware"
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	log "github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net"
 	"net/http"
-	"reflect"
 	"time"
+)
+
+var (
+	_ application.XHttp = (*XGin)(nil)
 )
 
 const (
@@ -93,13 +99,13 @@ func (g *XGin) Register(repos []application.Service) application.XHttp {
 	}
 	// 使用中间件
 	g.mux.Use(cors.Default())
+	g.mux.GET("swagger/*any",ginSwagger.WrapHandler(swaggerFiles.Handler))
 	g.mux.Use(middleware.Tracer())
 	for _, v := range repos {
-		t := reflect.TypeOf(v)
-		switch t.Elem().Name() {
-		case "userService":
+		switch v.(type) {
+		case application.UserInterface:
 			g.registerUserRouter(v.(application.UserInterface))
-		case "postService":
+		case application.PostInterface:
 			g.registerPostRouter(v.(application.PostInterface))
 		}
 	}

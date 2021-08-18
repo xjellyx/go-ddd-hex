@@ -8,19 +8,18 @@ import (
 	"github.com/opentracing/opentracing-go/log"
 )
 
-type postService struct {
+type PostService struct {
 	repo        dependency.PostRepo
 	postFactory *aggregate.UserPostFactory
-	txImpl      dependency.Transaction
 }
 
-func NewPostService(txImpl dependency.Transaction, postRepo dependency.PostRepo,
-	userRepo dependency.UserRepo) *postService {
-	return &postService{repo: postRepo, txImpl: txImpl, postFactory: aggregate.NewUserPostFactory(postRepo, userRepo)}
+func NewPostService(postRepo dependency.PostRepo,
+	userRepo dependency.UserRepo) *PostService {
+	return &PostService{repo: postRepo, postFactory: aggregate.NewUserPostFactory(postRepo, userRepo)}
 }
 
-func (p *postService) GetByUserID(ctx context.Context, userId string) (res *aggregate.QueryUserPostRes, err error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "postService-GetByUserID")
+func (p *PostService) GetByUserID(ctx context.Context, userId string) (res *aggregate.QueryUserPostRes, err error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "PostService-GetByUserID")
 	defer func() {
 		if err != nil {
 			span.LogFields(log.Error(err))

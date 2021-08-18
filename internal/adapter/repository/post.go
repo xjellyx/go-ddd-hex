@@ -16,7 +16,7 @@ type postRepo struct {
 }
 
 func init() {
-	application.App.AppendRepo(NewPostRepo(application.App.Ctx, application.App.GetDB()))
+	application.App.AppendRepo(NewPostRepo(application.App.GetDB()))
 	db.RegisterInjector(func(db *gorm.DB) {
 		if config.GetConfig().AutoMigrate {
 			err := db.AutoMigrate(&entity.Post{})
@@ -27,8 +27,8 @@ func init() {
 	})
 }
 
-func NewPostRepo(ctx context.Context, database application.Database) *postRepo {
-	return &postRepo{db: database.DB(ctx).(*gorm.DB)}
+func NewPostRepo(database application.Database) *postRepo {
+	return &postRepo{db: database.DB().(*gorm.DB)}
 }
 
 func (u *postRepo) Get(ctx context.Context, id string) (res *entity.Post, err error) {
@@ -53,13 +53,13 @@ func (u *postRepo) Find(ctx context.Context, cond map[string]interface{}, meta *
 	return
 }
 
-func (u *postRepo) Create(ctx context.Context, Post *entity.Post) error {
+func (u *postRepo) Create(ctx context.Context, Posts []*entity.Post) error {
 	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Create")
-	return u.db.WithContext(ctx).Create(Post).Error
+	return u.db.WithContext(ctx).Create(Posts).Error
 }
 
 func (u *postRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
-	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-Update")
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "postRepo-ChangePasswd")
 	if err := u.db.WithContext(ctx).Model(&entity.Post{}).Where(cond).Updates(change).Error; err != nil {
 		return err
 	}

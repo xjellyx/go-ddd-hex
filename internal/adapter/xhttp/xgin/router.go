@@ -12,12 +12,13 @@ func (g *XGin) RegisterPprof() {
 func (g *XGin) registerPostRouter(post application.PostInterface) {
 	group := g.mux.Group(ApiV1 + "posts")
 	ctl := NewPostCtl(post)
-	group.GET("/", ctl.GetByUserID)
+	group.GET("/:userId", ctl.GetByUserID)
 }
 
 func (g *XGin) registerUserRouter(userInterface application.UserInterface) {
 	group := g.mux.Group(ApiV1 + "users")
 	ctl := NewUserCtl(userInterface)
 	group.GET(":id", ctl.Get)
-	group.POST("/", ctl.ChangePassword)
+	group.PUT("/changePasswd", ctl.ChangePasswd)
+	group.POST("/", ctl.Create)
 }

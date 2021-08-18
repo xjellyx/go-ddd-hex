@@ -34,8 +34,8 @@ func (f *UserPostFactory) UserPostQuery(ctx context.Context, userId string) (res
 		return nil, err
 	}
 	if dataPost, err = f.PostRepo.Find(ctx, map[string]interface{}{
-		"user_uuid": userId,
-	}, &query.Meta{PageNum: 1, PageSize: 10}); err != nil {
+		"user_uuid": data.UUID,
+	}, &query.Meta{}); err != nil {
 		return
 	}
 

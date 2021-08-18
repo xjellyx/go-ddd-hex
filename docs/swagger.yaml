@@ -1,0 +1,122 @@
+definitions:
+  response.Meta:
+    additionalProperties: true
+    type: object
+  response.Response:
+    properties:
+      code:
+        type: integer
+      data:
+        type: object
+      error:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/response.Meta'
+    type: object
+  vo.UserVOForm:
+    properties:
+      isAdmin:
+        description: true：是管理员
+        type: boolean
+      nickname:
+        description: 昵称
+        type: string
+      password:
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/users/change-passwd:
+    put:
+      consumes:
+      - application/json
+      description: 参数传递新旧密码
+      parameters:
+      - description: 旧密码
+        in: body
+        name: oldPasswd
+        required: true
+        schema:
+          type: string
+      - description: 新密码
+        in: body
+        name: newPasswd
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: jwt验证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 修改密码
+      tags:
+      - User用户
+  /api/v1/posts/:userId/:
+    get:
+      consumes:
+      - application/json
+      description: 通过用户id获取
+      parameters:
+      - description: 用户id
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 获取个人文章信息默认十条
+      tags:
+      - Post文章
+  /api/v1/users/:
+    post:
+      consumes:
+      - application/json
+      description: 参数是一个数组对象
+      parameters:
+      - description: 表单数组
+        in: body
+        name: '[object]'
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/vo.UserVOForm'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: jwt验证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 创建user记录
+      tags:
+      - User用户
+swagger: "2.0"

@@ -1,6 +1,9 @@
 package vo
 
-import "github.com/olongfen/go-ddd-hex/internal/domain/entity"
+import (
+	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
+	uuid "github.com/satori/go.uuid"
+)
 
 type UserVO struct {
 	BaseVO
@@ -11,7 +14,9 @@ type UserVO struct {
 }
 
 type UserVOForm struct {
-	UserVO
+	Username string `json:"username,omitempty"` // 用户名
+	Nickname string `json:"nickname,omitempty"` // 昵称
+	IsAdmin  bool   `json:"isAdmin,omitempty"`  // true：是管理员
 	Password string `json:"password"`
 }
 
@@ -30,9 +35,7 @@ func UserVOForm2Entity(in *UserVOForm) *entity.User {
 	res.SetUsername(in.Username)
 	res.SetIsAdmin(&in.IsAdmin)
 	res.SetNickname(in.Nickname)
-	res.CreatedAt = in.CreatedAt
-	res.UpdatedAt = in.UpdatedAt
 	res.SetPassword(in.Password)
-	res.SetUUID(in.UUID)
+	res.SetUUID(uuid.NewV4().String())
 	return res
 }

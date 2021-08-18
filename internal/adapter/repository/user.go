@@ -14,11 +14,11 @@ type userRepo struct {
 }
 
 func init() {
-	application.App.AppendRepo(NewUserRepo(application.App.Ctx, application.App.GetDB()))
+	application.App.AppendRepo(NewUserRepo(application.App.GetDB()))
 }
 
-func NewUserRepo(ctx context.Context, database application.Database) *userRepo {
-	return &userRepo{db: database.DB(ctx).(*gorm.DB)}
+func NewUserRepo(database application.Database) *userRepo {
+	return &userRepo{db: database.DB().(*gorm.DB)}
 }
 
 func (u *userRepo) Get(ctx context.Context, id string) (res *entity.User, err error) {
@@ -43,13 +43,13 @@ func (u *userRepo) Find(ctx context.Context, cond map[string]interface{}, meta *
 	return
 }
 
-func (u *userRepo) Create(ctx context.Context, user *entity.User) error {
+func (u *userRepo) Create(ctx context.Context, users []*entity.User) error {
 	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "userRepo-Create")
-	return u.db.WithContext(ctx).Create(user).Error
+	return u.db.WithContext(ctx).Create(users).Error
 }
 
 func (u *userRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
-	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "userRepo-Update")
+	ctx = context.WithValue(ctx, db.RepositoryMethodCtxTag, "userRepo-ChangePasswd")
 	if err := u.db.WithContext(ctx).Model(&entity.User{}).Where(cond).Updates(change).Error; err != nil {
 		return err
 	}

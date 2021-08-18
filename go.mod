@@ -3,10 +3,11 @@ module github.com/olongfen/go-ddd-hex
 go 1.16
 
 require (
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/pprof v1.3.0 // indirect
-	github.com/gin-gonic/gin v1.6.3 // indirect
+	github.com/gin-gonic/gin v1.7.0 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2
@@ -23,6 +24,9 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0 // indirect
+	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14 // indirect
+	github.com/swaggo/gin-swagger v1.3.1 // indirect
+	github.com/swaggo/swag v1.5.1 // indirect
 	github.com/uber/jaeger-client-go v2.29.1+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	go.uber.org/atomic v1.9.0 // indirect
