@@ -16,21 +16,20 @@ func TestPostService_GetByUserID(t *testing.T) {
 		ctl      = gomock.NewController(t)
 		postRepo *post.MockPostRepo
 		userRepo *user.MockUserRepo
-		txmlRepo *user.MockTransaction
 	)
 	defer ctl.Finish()
 
 	postRepo = post.NewMockPostRepo(ctl)
 	ctx := context.Background()
+	user_ := &entity.User{Username: "test", UUID: "1"}
 	postRepo.EXPECT().Find(ctx, map[string]interface{}{
-		"user_uuid": "1",
-	}, &query.Meta{PageNum: 1, PageSize: 10}).Return([]*entity.Post{
+		"user_uuid": user_.UUID,
+	}, &query.Meta{}).Return([]*entity.Post{
 		{Title: "test_title"},
 	}, nil)
 	userRepo = user.NewMockUserRepo(ctl)
-	userRepo.EXPECT().Get(ctx, "1").Return(&entity.User{Username: "test"}, nil)
-	txmlRepo = user.NewMockTransaction(ctl)
-	p := NewPostService(txmlRepo, postRepo, userRepo)
+	userRepo.EXPECT().Get(ctx, "1").Return(user_, nil)
+	p := NewPostService(postRepo, userRepo)
 	if data, err := p.GetByUserID(ctx, "1"); err != nil {
 		t.Fatal(err)
 	} else {

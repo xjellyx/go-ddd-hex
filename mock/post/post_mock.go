@@ -37,7 +37,7 @@ func (m *MockPostRepo) EXPECT() *MockPostRepoMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockPostRepo) Create(ctx context.Context, post *entity.Post) error {
+func (m *MockPostRepo) Create(ctx context.Context, post []*entity.Post) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, post)
 	ret0, _ := ret[0].(error)
@@ -97,7 +97,7 @@ func (mr *MockPostRepoMockRecorder) Get(ctx, id interface{}) *gomock.Call {
 // Update mocks base method.
 func (m *MockPostRepo) Update(ctx context.Context, cond map[string]interface{}, change interface{}) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangePasswd", ctx, cond, change)
+	ret := m.ctrl.Call(m, "Update", ctx, cond, change)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
@@ -105,5 +105,5 @@ func (m *MockPostRepo) Update(ctx context.Context, cond map[string]interface{}, 
 // Update indicates an expected call of Update.
 func (mr *MockPostRepoMockRecorder) Update(ctx, cond, change interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePasswd", reflect.TypeOf((*MockPostRepo)(nil).Update), ctx, cond, change)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockPostRepo)(nil).Update), ctx, cond, change)
 }

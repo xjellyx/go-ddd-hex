@@ -11,14 +11,12 @@ import (
 
 func TestUserService_Get(t *testing.T) {
 	var (
-		txrepo *user.MockTransaction
-		repo   *user.MockUserRepo
+		repo *user.MockUserRepo
 	)
 	ctl := gomock.NewController(t)
 	defer ctl.Finish()
 	repo = user.NewMockUserRepo(ctl)
-	txrepo = user.NewMockTransaction(ctl)
-	s := NewUserService(txrepo, repo)
+	s := NewUserService(repo)
 	ctx := context.Background()
 	repo.EXPECT().Get(ctx, "1").Return(&entity.User{Username: "test1"}, nil)
 	if u, err := s.Get(ctx, "1"); err != nil {
