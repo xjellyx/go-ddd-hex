@@ -15,6 +15,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.5.0
 	github.com/guregu/null v4.0.0+incompatible
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/opentracing-contrib/go-gin v0.0.0-20201220185307-1dd2273433a4 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect

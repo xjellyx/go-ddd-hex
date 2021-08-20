@@ -1,6 +1,7 @@
-package xgin
+package handler
 
 import (
+	"context"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/internal/application"
@@ -8,8 +9,8 @@ import (
 	"github.com/olongfen/go-ddd-hex/lib/response"
 )
 
-type UserExecCtl struct {
-	domain application.UserInterface
+type userExecCtl struct {
+	domain application.UserServiceInterface
 }
 
 // ChangePasswd .
@@ -23,7 +24,7 @@ type UserExecCtl struct {
 // @Success 200  {object} response.Response
 // @Failure 400  {object} response.Response "jwt验证失败"
 // @Router /api/users/change-passwd [put]
-func (u *UserExecCtl) ChangePasswd(c *gin.Context) {
+func (u *userExecCtl) ChangePasswd(ctx context.Context) {
 	var (
 		res       interface{}
 		err       error
@@ -31,6 +32,7 @@ func (u *UserExecCtl) ChangePasswd(c *gin.Context) {
 		newPasswd string
 	)
 
+	c := ctx.(*gin.Context)
 	defer func() {
 		if err != nil {
 			response.NewGinResponse(c).Fail(response.CodeFail, err).Response()
@@ -65,12 +67,13 @@ func (u *UserExecCtl) ChangePasswd(c *gin.Context) {
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response "jwt验证失败"
 // @Router /api/v1/users/   [post]
-func (u *UserExecCtl) Create(c *gin.Context) {
+func (u *userExecCtl) Create(ctx context.Context) {
 	var (
 		res  interface{}
 		form []*vo.UserVOForm
 		err  error
 	)
+	c := ctx.(*gin.Context)
 	defer func() {
 		if err != nil {
 			response.NewGinResponse(c).Fail(response.CodeFail, err).Response()

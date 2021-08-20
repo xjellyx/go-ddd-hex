@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/olongfen/go-ddd-hex/config"
+	"github.com/olongfen/go-ddd-hex/internal/contant"
 	"github.com/opentracing/opentracing-go"
 	tracerLog "github.com/opentracing/opentracing-go/log"
 	uuid "github.com/satori/go.uuid"
@@ -94,14 +95,6 @@ func registerCallback(db *gorm.DB) {
 	}
 }
 
-// 包内静态变量
-const gormSpanKey = "__gorm_span"
-const (
-	RepositoryMethodCtxTag = "repository_method"
-	callBackBeforeName     = "opentracing:before"
-	callBackAfterName      = "opentracing:after"
-)
-
 type OpentracingPlugin struct{}
 
 // 告诉编译器这个结构体实现了gorm.Plugin接口
@@ -109,20 +102,20 @@ var _ gorm.Plugin = &OpentracingPlugin{}
 
 func (op *OpentracingPlugin) Initialize(db *gorm.DB) (err error) {
 	// 开始前 - 并不是都用相同的方法，可以自己自定义
-	db.Callback().Create().Before("gorm:before_create").Register(callBackBeforeName, before)
-	db.Callback().Query().Before("gorm:query").Register(callBackBeforeName, before)
-	db.Callback().Delete().Before("gorm:before_delete").Register(callBackBeforeName, before)
-	db.Callback().Update().Before("gorm:setup_reflect_value").Register(callBackBeforeName, before)
-	db.Callback().Row().Before("gorm:row").Register(callBackBeforeName, before)
-	db.Callback().Raw().Before("gorm:raw").Register(callBackBeforeName, before)
+	db.Callback().Create().Before("gorm:before_create").Register(contant.CallBackBeforeName, before)
+	db.Callback().Query().Before("gorm:query").Register(contant.CallBackBeforeName, before)
+	db.Callback().Delete().Before("gorm:before_delete").Register(contant.CallBackBeforeName, before)
+	db.Callback().Update().Before("gorm:setup_reflect_value").Register(contant.CallBackBeforeName, before)
+	db.Callback().Row().Before("gorm:row").Register(contant.CallBackBeforeName, before)
+	db.Callback().Raw().Before("gorm:raw").Register(contant.CallBackBeforeName, before)
 
 	// 结束后 - 并不是都用相同的方法，可以自己自定义
-	db.Callback().Create().After("gorm:after_create").Register(callBackAfterName, after)
-	db.Callback().Query().After("gorm:after_query").Register(callBackAfterName, after)
-	db.Callback().Delete().After("gorm:after_delete").Register(callBackAfterName, after)
-	db.Callback().Update().After("gorm:after_update").Register(callBackAfterName, after)
-	db.Callback().Row().After("gorm:row").Register(callBackAfterName, after)
-	db.Callback().Raw().After("gorm:raw").Register(callBackAfterName, after)
+	db.Callback().Create().After("gorm:after_create").Register(contant.CallBackAfterName, after)
+	db.Callback().Query().After("gorm:after_query").Register(contant.CallBackAfterName, after)
+	db.Callback().Delete().After("gorm:after_delete").Register(contant.CallBackAfterName, after)
+	db.Callback().Update().After("gorm:after_update").Register(contant.CallBackAfterName, after)
+	db.Callback().Row().After("gorm:row").Register(contant.CallBackAfterName, after)
+	db.Callback().Raw().After("gorm:raw").Register(contant.CallBackAfterName, after)
 	return
 }
 
@@ -131,17 +124,17 @@ func (op *OpentracingPlugin) Name() string {
 }
 
 func before(db *gorm.DB) {
-	val, ok := db.Statement.Context.Value(RepositoryMethodCtxTag).(string)
+	val, ok := db.Statement.Context.Value(contant.RepositoryMethodCtxTag).(string)
 	if !ok {
 		val = "gorm"
 	}
 	span, _ := opentracing.StartSpanFromContext(db.Statement.Context, val)
 	// 利用db实例去传递span
-	db.InstanceSet(gormSpanKey, span)
+	db.InstanceSet(contant.GormSpanKey, span)
 }
 
 func after(db *gorm.DB) {
-	_span, exist := db.InstanceGet(gormSpanKey)
+	_span, exist := db.InstanceGet(contant.GormSpanKey)
 	if !exist {
 		return
 	}

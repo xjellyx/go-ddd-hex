@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/config"
 	_ "github.com/olongfen/go-ddd-hex/docs"
@@ -11,8 +12,6 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	log "github.com/sirupsen/logrus"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"net"
 	"net/http"
 	"time"
@@ -27,9 +26,10 @@ const (
 )
 
 type XGin struct {
-	ctx context.Context
-	cfg *config.Config
-	mux *gin.Engine
+	ctx         context.Context
+	cfg         *config.Config
+	mux         *gin.Engine
+	routerGroup *gin.RouterGroup
 }
 
 func init() {
@@ -88,8 +88,8 @@ func (g *XGin) Run() {
 	log.Info("HTTP Server Shutdown...")
 }
 
-func (g *XGin) Register(repos []application.Service) application.XHttp {
-	g.RegisterPprof()
+func (g *XGin) Init() application.XHttp {
+	pprof.Register(g.mux) // default is "debug/pprof"
 	if !g.cfg.Debug {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -97,18 +97,45 @@ func (g *XGin) Register(repos []application.Service) application.XHttp {
 		// 打印body
 		g.mux.Use(middleware.GinLogFormatter())
 	}
+	var _ http.Handler = g.mux
 	// 使用中间件
 	g.mux.Use(cors.Default())
-	g.mux.GET("swagger/*any",ginSwagger.WrapHandler(swaggerFiles.Handler))
 	g.mux.Use(middleware.Tracer())
-	for _, v := range repos {
-		switch v.(type) {
-		case application.UserInterface:
-			g.registerUserRouter(v.(application.UserInterface))
-		case application.PostInterface:
-			g.registerPostRouter(v.(application.PostInterface))
-		}
-	}
-
 	return g
+}
+
+func (g *XGin) Use(middlewares ...func(ctx context.Context)) application.XHttp {
+	for _, v := range middlewares {
+		g.mux.Use(utils.WrapF(v))
+	}
+	return g
+}
+
+func (g *XGin) GetMux() http.Handler {
+	return g.mux
+}
+
+func (g *XGin) Route(ctls ...application.IController) application.XHttp {
+	for _, v := range ctls {
+		v.Router(g, false)
+	}
+	return g
+}
+
+func (g *XGin) RouterGroup(group string, ctls ...application.IController) application.XHttp {
+	g.routerGroup = g.mux.Group(group)
+	for _, v := range ctls {
+		v.Router(g, true)
+	}
+	return g
+}
+
+func (g *XGin) Handle(httpMethod, relativePath string, f func(ctx context.Context), isGroup bool) application.XHttp {
+	if isGroup {
+		g.routerGroup.Handle(httpMethod, relativePath, utils.WrapF(f))
+	} else {
+		g.mux.Handle(httpMethod, relativePath, utils.WrapF(f))
+	}
+	return g
+
 }

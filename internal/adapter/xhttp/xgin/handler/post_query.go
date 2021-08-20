@@ -1,13 +1,14 @@
-package xgin
+package handler
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/lib/response"
 )
 
-type PostQueryCtl struct {
-	domain application.PostInterface
+type postQueryCtl struct {
+	domain application.PostServiceInterface
 }
 
 // GetByUserID .
@@ -20,7 +21,8 @@ type PostQueryCtl struct {
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response jwt验证失败
 // @Router /api/v1/posts/:userId/ [get]
-func (p *PostQueryCtl) GetByUserID(c *gin.Context) {
+func (p *postQueryCtl) GetByUserID(ctx context.Context) {
+	c := ctx.(*gin.Context)
 	userId := c.Param("userId")
 	var (
 		res interface{}

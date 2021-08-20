@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/olongfen/go-ddd-hex/config"
-	"github.com/olongfen/go-ddd-hex/internal/domain/aggregate"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/service"
-	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/internal/infra/db"
 	"github.com/olongfen/go-ddd-hex/internal/infra/tracer"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
@@ -23,10 +21,7 @@ import (
 )
 
 var (
-	// 告诉编译器接口是否实现
-	_   UserInterface = (*service.UserService)(nil)
-	_   PostInterface = (*service.PostService)(nil)
-	App               = new(Application)
+	App = new(Application)
 )
 
 func init() {
@@ -58,46 +53,15 @@ func init() {
 	}()
 }
 
-// UserInterface user 用户服务接口
-type UserInterface interface {
-	Create(ctx context.Context, forms []*vo.UserVOForm) (res []*vo.UserVO, err error)
-	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
-	Get(ctx context.Context, id string) (res *vo.UserVO, err error)
-}
-
-// PostInterface post 服务接口
-type PostInterface interface {
-	GetByUserID(ctx context.Context, userID string) (*aggregate.QueryUserPostRes, error)
-}
-
-// XHttp  http 接口
-type XHttp interface {
-	Run()
-	Register(reps []Service) XHttp
-}
-
-// Database 数据库基础组件接口
-type Database interface {
-	Connect()
-	DB() interface{}
-}
-
-// Service service 服务接口
-type Service interface {
-}
-
-// Repository 存储库接口
-type Repository interface {
-}
-
 // Application 应用程序入口
 type Application struct {
-	Ctx      context.Context
-	Cancel   context.CancelFunc
-	repos    []Repository
-	services []Service
-	http     XHttp
-	db       Database
+	Ctx              context.Context
+	Cancel           context.CancelFunc
+	repos            []Repository
+	http             XHttp
+	httpHandler      []IController
+	httpGroupHandler []IController
+	db               Database
 }
 
 func checkRepo(repo Repository) (err error) {
@@ -113,8 +77,8 @@ func (a *Application) InjectServices() *Application {
 		err         error
 		userRepo    dependency.UserRepo
 		postRepo    dependency.PostRepo
-		userService UserInterface
-		postService PostInterface
+		userService UserServiceInterface
+		postService PostServiceInterface
 	)
 	for _, v := range a.repos {
 		switch v.(type) {
@@ -134,15 +98,33 @@ func (a *Application) InjectServices() *Application {
 	// 注册服务
 	userService = service.NewUserService(userRepo)
 	postService = service.NewPostService(postRepo, userRepo)
-	a.services = append(a.services, userService)
-	a.services = append(a.services, postService)
-	a.http.Register(a.services)
+	for _, v := range a.httpGroupHandler {
+		switch v.(type) {
+		case PostHandler:
+			v.(PostHandler).SetService(postService)
+		case UserHandler:
+			v.(UserHandler).SetService(userService)
+		}
+	}
+	a.http.Init()
 	return a
 }
 
 // AppendRepo 添加存储库
 func (a *Application) AppendRepo(repo Repository) *Application {
 	a.repos = append(a.repos, repo)
+	return a
+}
+
+// AppendHTTPHandler http handler
+func (a *Application) AppendHTTPHandler(repo IController) *Application {
+	a.httpHandler = append(a.httpHandler, repo)
+	return a
+}
+
+// AppendHTTPGroupHandler http handler
+func (a *Application) AppendHTTPGroupHandler(repo IController) *Application {
+	a.httpGroupHandler = append(a.httpGroupHandler, repo)
 	return a
 }
 
@@ -164,7 +146,8 @@ func (a *Application) GetDB() Database {
 }
 
 func (a *Application) Run() {
-
+	App.http.RouterGroup("api/v1", App.httpGroupHandler...)
+	App.http.Route(App.httpHandler...)
 	go App.http.Run()
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)
