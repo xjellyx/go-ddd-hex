@@ -146,9 +146,7 @@ func (a *Application) GetDB() Database {
 }
 
 func (a *Application) Run() {
-	App.http.RouterGroup("api/v1", App.httpGroupHandler...)
-	App.http.Route(App.httpHandler...)
-	go App.http.Run()
+	go App.http.RouterGroup("api/v1", App.httpGroupHandler...).Route(App.httpHandler...).Run()
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGKILL)
 
