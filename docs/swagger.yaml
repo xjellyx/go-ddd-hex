@@ -19,7 +19,7 @@ definitions:
     type: object
   vo.UserVOForm:
     properties:
-      isAdmin:
+      is_admin:
         description: true：是管理员
         type: boolean
       nickname:
@@ -42,13 +42,13 @@ paths:
       parameters:
       - description: 旧密码
         in: body
-        name: oldPasswd
+        name: old_passwd
         required: true
         schema:
           type: string
       - description: 新密码
         in: body
-        name: newPasswd
+        name: new_passwd
         required: true
         schema:
           type: string
@@ -66,7 +66,7 @@ paths:
       summary: 修改密码
       tags:
       - User用户
-  /api/v1/posts/:userId/:
+  /api/v1/posts/:user_id/:
     get:
       consumes:
       - application/json
@@ -74,7 +74,7 @@ paths:
       parameters:
       - description: 用户id
         in: path
-        name: userId
+        name: user_id
         required: true
         type: string
       produces:

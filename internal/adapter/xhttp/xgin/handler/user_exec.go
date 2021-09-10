@@ -19,8 +19,8 @@ type userExecCtl struct {
 // @Description 参数传递新旧密码
 // @Accept json
 // @Produce json
-// @Param oldPasswd body string true "旧密码"
-// @Param newPasswd body string true "新密码"
+// @Param old_passwd body string true "旧密码"
+// @Param new_passwd body string true "新密码"
 // @Success 200  {object} response.Response
 // @Failure 400  {object} response.Response "jwt验证失败"
 // @Router /api/users/change-passwd [put]
@@ -41,8 +41,8 @@ func (u *userExecCtl) ChangePasswd(ctx context.Context) {
 		}
 	}()
 	id := c.GetString("id")
-	oldPasswd = c.Param("oldPasswd")
-	newPasswd = c.Param("newPasswd")
+	oldPasswd = c.Param("old_passwd")
+	newPasswd = c.Param("new_passwd")
 	if len(oldPasswd) == 0 {
 		err = errors.New("old password invalid")
 		return

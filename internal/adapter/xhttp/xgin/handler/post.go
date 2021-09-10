@@ -26,5 +26,5 @@ func (p *postCtl) Router(xhttp application.XHttp, isGroup bool) {
 		log.Fatal("post controller domain service not init")
 	}
 	const post = "posts"
-	xhttp.Handle("GET", post+"/:userId", p.GetByUserID, isGroup)
+	xhttp.Handle("GET", post+"/:user_id", p.GetByUserID, isGroup)
 }

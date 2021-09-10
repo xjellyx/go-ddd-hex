@@ -40,7 +40,7 @@ var doc = `{
                 "parameters": [
                     {
                         "description": "旧密码",
-                        "name": "oldPasswd",
+                        "name": "old_passwd",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -49,7 +49,7 @@ var doc = `{
                     },
                     {
                         "description": "新密码",
-                        "name": "newPasswd",
+                        "name": "new_passwd",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -73,7 +73,7 @@ var doc = `{
                 }
             }
         },
-        "/api/v1/posts/:userId/": {
+        "/api/v1/posts/:user_id/": {
             "get": {
                 "description": "通过用户id获取",
                 "consumes": [
@@ -90,7 +90,7 @@ var doc = `{
                     {
                         "type": "string",
                         "description": "用户id",
-                        "name": "userId",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -186,7 +186,7 @@ var doc = `{
         "vo.UserVOForm": {
             "type": "object",
             "properties": {
-                "isAdmin": {
+                "is_admin": {
                     "description": "true：是管理员",
                     "type": "boolean"
                 },

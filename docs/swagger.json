@@ -20,7 +20,7 @@
                 "parameters": [
                     {
                         "description": "旧密码",
-                        "name": "oldPasswd",
+                        "name": "old_passwd",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -29,7 +29,7 @@
                     },
                     {
                         "description": "新密码",
-                        "name": "newPasswd",
+                        "name": "new_passwd",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -53,7 +53,7 @@
                 }
             }
         },
-        "/api/v1/posts/:userId/": {
+        "/api/v1/posts/:user_id/": {
             "get": {
                 "description": "通过用户id获取",
                 "consumes": [
@@ -70,7 +70,7 @@
                     {
                         "type": "string",
                         "description": "用户id",
-                        "name": "userId",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -166,7 +166,7 @@
         "vo.UserVOForm": {
             "type": "object",
             "properties": {
-                "isAdmin": {
+                "is_admin": {
                     "description": "true：是管理员",
                     "type": "boolean"
                 },

@@ -17,13 +17,13 @@ type postQueryCtl struct {
 // @Description 通过用户id获取
 // @Accept json
 // @Produce json
-// @Param userId path string true "用户id"
+// @Param user_id path string true "用户id"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response jwt验证失败
-// @Router /api/v1/posts/:userId/ [get]
+// @Router /api/v1/posts/:user_id/ [get]
 func (p *postQueryCtl) GetByUserID(ctx context.Context) {
 	c := ctx.(*gin.Context)
-	userId := c.Param("userId")
+	userId := c.Param("user_id")
 	var (
 		res interface{}
 		err error

@@ -10,14 +10,14 @@ type UserVO struct {
 	UUID     string `json:"uuid,omitempty"`
 	Username string `json:"username,omitempty"` // 用户名
 	Nickname string `json:"nickname,omitempty"` // 昵称
-	IsAdmin  bool   `json:"isAdmin,omitempty"`  // true：是管理员
+	IsAdmin  bool   `json:"is_admin,omitempty"` // true：是管理员
 }
 
 type UserVOForm struct {
 	Username string `json:"username,omitempty"` // 用户名
 	Nickname string `json:"nickname,omitempty"` // 昵称
-	IsAdmin  bool   `json:"isAdmin,omitempty"`  // true：是管理员
-	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin,omitempty"` // true：是管理员
+	Password string `json:"password,omitempty"`
 }
 
 func UserEntity2VO(in *entity.User) *UserVO {

@@ -7,8 +7,8 @@ import (
 
 type PostVO struct {
 	BaseVO
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title   string `json:"title,omitempty"`
+	Content string `json:"content,omitempty"`
 }
 
 func PostEntity2VO(in *entity.Post) *PostVO {
