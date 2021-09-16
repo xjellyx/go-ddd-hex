@@ -1,4 +1,10 @@
 appname: USER_SERVER
+auth:
+  identitykey: id
+  iscaptcha: false
+  key: "123456"
+  maxrefresh: 24
+  timeout: 24
 config_path: dfadsf
 dbconfig:
   automigrate: true

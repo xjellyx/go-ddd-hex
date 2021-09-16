@@ -58,6 +58,7 @@ type Application struct {
 	Ctx              context.Context
 	Cancel           context.CancelFunc
 	repos            []Repository
+	services         []Service
 	http             XHttp
 	httpHandler      []IController
 	httpGroupHandler []IController
@@ -69,6 +70,22 @@ func checkRepo(repo Repository) (err error) {
 		return errors.New("repository is not init")
 	}
 	return
+}
+
+func (a *Application) GetUserService() UserServiceInterface {
+	var (
+		res UserServiceInterface
+	)
+	for _, v := range a.services {
+		if val, ok := v.(UserServiceInterface); ok {
+			res = val
+			break
+		}
+	}
+	if res == nil {
+		log.Fatal("user service not append")
+	}
+	return res
 }
 
 // InjectServices 注册服务
@@ -98,6 +115,7 @@ func (a *Application) InjectServices() *Application {
 	// 注册服务
 	userService = service.NewUserService(userRepo)
 	postService = service.NewPostService(postRepo, userRepo)
+	a.services = append(a.services, userService, postService)
 	for _, v := range a.httpGroupHandler {
 		switch v.(type) {
 		case PostHandler:
@@ -106,7 +124,8 @@ func (a *Application) InjectServices() *Application {
 			v.(UserHandler).SetService(userService)
 		}
 	}
-	a.http.Init()
+
+	a.http.Init().Use()
 	return a
 }
 

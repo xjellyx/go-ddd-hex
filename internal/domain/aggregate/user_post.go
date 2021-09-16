@@ -30,7 +30,7 @@ func (f *UserPostFactory) UserPostQuery(ctx context.Context, userId string) (res
 		dataPost []*entity.Post
 	)
 
-	if data, err = f.UserRepo.Get(ctx, userId); err != nil {
+	if data, err = f.UserRepo.Get(ctx, vo.UserUnique{ID: userId}); err != nil {
 		return nil, err
 	}
 	if dataPost, err = f.PostRepo.Find(ctx, map[string]interface{}{

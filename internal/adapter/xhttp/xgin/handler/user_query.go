@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/olongfen/go-ddd-hex/internal/application"
+	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/lib/response"
 )
 
@@ -26,13 +27,12 @@ func (u *userQueryCtl) Get(c context.Context) {
 		}
 	}()
 
-	id = ctx.Param("id")
-	data, _err := u.domain.Get(ctx.Request.Context(), id)
+	id = ctx.GetString("id")
+	data, _err := u.domain.Get(ctx.Request.Context(), vo.UserUnique{ID: id})
 	if _err != nil {
 		err = _err
 		return
 	}
-
 	res = data
 
 	return

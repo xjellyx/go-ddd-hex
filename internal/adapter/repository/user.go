@@ -5,6 +5,7 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/internal/contant"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
+	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/lib/query"
 	"gorm.io/gorm"
 )
@@ -21,13 +22,29 @@ func NewUserRepo(database application.Database) *userRepo {
 	return &userRepo{db: database.DB().(*gorm.DB)}
 }
 
-func (u *userRepo) Get(ctx context.Context, id string) (res *entity.User, err error) {
+func (u *userRepo) Get(ctx context.Context, unique vo.UserUnique) (res *entity.User, err error) {
 	var (
 		data = new(entity.User)
 	)
 	ctx = context.WithValue(ctx, contant.RepositoryMethodCtxTag, "userRepo-Get")
-	if err = u.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).First(data).Error; err != nil {
-		return
+	db := u.db.WithContext(ctx).Model(&entity.User{})
+	switch {
+	case len(unique.ID) > 0:
+		if err = db.Where("id = ?", unique.ID).First(data).Error; err != nil {
+			return
+		}
+	case len(unique.Phone) > 0:
+		if err = db.Where("phone = ?", unique.Phone).First(data).Error; err != nil {
+			return
+		}
+	case len(unique.UUID) > 0:
+		if err = db.Where("uuid = ?", unique.UUID).First(data).Error; err != nil {
+			return
+		}
+	case len(unique.Username) > 0:
+		if err = db.Where("username = ?", unique.Username).First(data).Error; err != nil {
+			return
+		}
 	}
 
 	res = data

@@ -28,7 +28,7 @@ func (u *userCtl) Router(xHttp application.XHttp, isGroup bool) {
 		logrus.Fatal("user controller domain service not init")
 	}
 	const user = "users"
-	xHttp.Handle("GET", user+"/:id", u.Get, isGroup)
+	xHttp.Handle("GET", user, u.Get, isGroup)
 	xHttp.Handle("PUT", user+"/change-passwd", u.ChangePasswd, isGroup)
 	xHttp.Handle("POST", user+"/", u.Register, isGroup)
 }

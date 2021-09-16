@@ -3,11 +3,12 @@ package dependency
 import (
 	"context"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
+	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/lib/query"
 )
 
 type UserRepo interface {
-	Get(ctx context.Context, id string) (*entity.User, error)
+	Get(ctx context.Context, unique vo.UserUnique) (*entity.User, error)
 	Find(ctx context.Context, cond map[string]interface{}, meta *query.Meta) ([]*entity.User, error)
 	Create(ctx context.Context, user []*entity.User) error
 	Update(ctx context.Context, cond map[string]interface{}, change interface{}) error

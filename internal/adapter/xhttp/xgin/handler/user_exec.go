@@ -63,7 +63,7 @@ func (u *userExecCtl) ChangePasswd(ctx context.Context) {
 // @Description 参数是一个数组对象
 // @Accept json
 // @Produce json
-// @Param [object] body []vo.RegisterForm true "表单数组"
+// @Param [object] body vo.RegisterForm true "表单数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response "jwt验证失败"
 // @Router /api/v1/users/   [post]

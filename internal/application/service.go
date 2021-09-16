@@ -17,7 +17,7 @@ var (
 type UserServiceInterface interface {
 	Create(ctx context.Context, forms []*vo.UserVOForm) (res []*vo.UserVO, err error)
 	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
-	Get(ctx context.Context, id string) (res *vo.UserVO, err error)
+	Get(ctx context.Context, unique vo.UserUnique) (res *vo.UserVO, err error)
 	Register(ctx context.Context, f vo.RegisterForm) error
 }
 

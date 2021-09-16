@@ -26,9 +26,17 @@ type Config struct {
 	// https
 	TlsCert string
 	TlsKey  string
-
+	Auth
 	// db
 	DBConfig
+}
+
+type Auth struct {
+	IsCaptcha   bool
+	Key         string
+	Timeout     int64
+	MaxRefresh  int
+	IdentityKey string
 }
 
 type DBConfig struct {
@@ -62,6 +70,11 @@ func setDefault() {
 	viper.SetDefault("dbconfig.MaxOpenConns", "20")
 	viper.SetDefault("dbconfig.AutoMigrate", true)
 	viper.SetDefault("dbconfig.Debug", true)
+	viper.SetDefault("auth.key", "123456")
+	viper.SetDefault("auth.timeout", 24)
+	viper.SetDefault("auth.maxrefresh", 24)
+	viper.SetDefault("auth.identitykey", "id")
+	viper.SetDefault("auth.iscaptcha", false)
 }
 
 func init() {

@@ -101,6 +101,16 @@ func (g *XGin) Init() application.XHttp {
 	// 使用中间件
 	g.mux.Use(cors.Default())
 	g.mux.Use(middleware.Tracer())
+	auth, err := middleware.AuthJWT(application.App.GetUserService())
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = auth.MiddlewareInit(); err != nil {
+		log.Fatal(err)
+	}
+	g.mux.POST("login", auth.LoginHandler)
+	g.mux.GET("refresh_token", auth.RefreshHandler)
+	g.mux.Use(auth.MiddlewareFunc())
 	return g
 }
 

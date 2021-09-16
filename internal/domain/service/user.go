@@ -46,19 +46,19 @@ func (u *UserService) Create(ctx context.Context, forms []*vo.UserVOForm) (res [
 	return
 }
 
-func (u *UserService) Get(ctx context.Context, id string) (res *vo.UserVO, err error) {
+func (u *UserService) Get(ctx context.Context, unique vo.UserUnique) (res *vo.UserVO, err error) {
 	var (
 		data *entity.User
 	)
 	span, _ := opentracing.StartSpanFromContext(ctx, "UserService-Get")
-	span.SetTag("getUser", id)
+	span.SetTag("getUser", unique)
 	defer func() {
 		if err != nil {
 			span.LogFields(log.Error(err))
 		}
 		span.Finish()
 	}()
-	if data, err = u.repo.Get(ctx, id); err != nil {
+	if data, err = u.repo.Get(ctx, unique); err != nil {
 		return
 	}
 	res = vo.UserEntity2VO(data)
@@ -76,7 +76,7 @@ func (u *UserService) ChangePassword(ctx context.Context, id string, oldPwd, new
 		}
 		span.Finish()
 	}()
-	if data, err = u.repo.Get(ctx, id); err != nil {
+	if data, err = u.repo.Get(ctx, vo.UserUnique{ID: id}); err != nil {
 		return
 	}
 	if data.Password.Ptr() != nil {

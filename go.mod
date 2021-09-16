@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
+	github.com/appleboy/gin-jwt/v2 v2.6.4 // indirect
+	github.com/dchest/captcha v0.0.0-20200903113550-03f5f0333e1f // indirect
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gin-contrib/cors v1.3.1 // indirect
 	github.com/gin-contrib/pprof v1.3.0 // indirect
