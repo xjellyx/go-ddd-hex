@@ -133,7 +133,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/vo.UserVOForm"
+                                "$ref": "#/definitions/vo.RegisterForm"
                             }
                         }
                     }
@@ -183,22 +183,17 @@ var doc = `{
                 }
             }
         },
-        "vo.UserVOForm": {
+        "vo.RegisterForm": {
             "type": "object",
+            "required": [
+                "password",
+                "phone"
+            ],
             "properties": {
-                "is_admin": {
-                    "description": "true：是管理员",
-                    "type": "boolean"
-                },
-                "nickname": {
-                    "description": "昵称",
-                    "type": "string"
-                },
                 "password": {
                     "type": "string"
                 },
-                "username": {
-                    "description": "用户名",
+                "phone": {
                     "type": "string"
                 }
             }

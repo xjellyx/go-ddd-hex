@@ -18,6 +18,7 @@ type UserServiceInterface interface {
 	Create(ctx context.Context, forms []*vo.UserVOForm) (res []*vo.UserVO, err error)
 	ChangePassword(ctx context.Context, id string, oldPwd, newPwd string) error
 	Get(ctx context.Context, id string) (res *vo.UserVO, err error)
+	Register(ctx context.Context, f vo.RegisterForm) error
 }
 
 // PostServiceInterface post 服务接口

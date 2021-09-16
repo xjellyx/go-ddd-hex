@@ -13,6 +13,11 @@ type UserVO struct {
 	IsAdmin  bool   `json:"is_admin,omitempty"` // true：是管理员
 }
 
+type RegisterForm struct {
+	Phone    string `json:"phone" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 type UserVOForm struct {
 	Username string `json:"username,omitempty"` // 用户名
 	Nickname string `json:"nickname,omitempty"` // 昵称

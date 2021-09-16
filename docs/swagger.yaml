@@ -17,19 +17,15 @@ definitions:
       meta:
         $ref: '#/definitions/response.Meta'
     type: object
-  vo.UserVOForm:
+  vo.RegisterForm:
     properties:
-      is_admin:
-        description: true：是管理员
-        type: boolean
-      nickname:
-        description: 昵称
-        type: string
       password:
         type: string
-      username:
-        description: 用户名
+      phone:
         type: string
+    required:
+    - password
+    - phone
     type: object
 info:
   contact: {}
@@ -103,7 +99,7 @@ paths:
         required: true
         schema:
           items:
-            $ref: '#/definitions/vo.UserVOForm'
+            $ref: '#/definitions/vo.RegisterForm'
           type: array
       produces:
       - application/json

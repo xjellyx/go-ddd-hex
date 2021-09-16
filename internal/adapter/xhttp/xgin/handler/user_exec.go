@@ -57,20 +57,20 @@ func (u *userExecCtl) ChangePasswd(ctx context.Context) {
 
 }
 
-// Create .
+// Register .
 // @Tags User用户
 // @Summary 创建user记录
 // @Description 参数是一个数组对象
 // @Accept json
 // @Produce json
-// @Param [object] body []vo.UserVOForm true "表单数组"
+// @Param [object] body []vo.RegisterForm true "表单数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response "jwt验证失败"
 // @Router /api/v1/users/   [post]
-func (u *userExecCtl) Create(ctx context.Context) {
+func (u *userExecCtl) Register(ctx context.Context) {
 	var (
 		res  interface{}
-		form []*vo.UserVOForm
+		form vo.RegisterForm
 		err  error
 	)
 	c := ctx.(*gin.Context)
@@ -84,11 +84,9 @@ func (u *userExecCtl) Create(ctx context.Context) {
 	if err = c.ShouldBind(&form); err != nil {
 		return
 	}
-	data, _err := u.domain.Create(c.Request.Context(), form)
+	_err := u.domain.Register(c.Request.Context(), form)
 	if _err != nil {
 		err = _err
 		return
 	}
-
-	res = data
 }

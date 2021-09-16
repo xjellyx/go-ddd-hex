@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
+	"github.com/olongfen/go-ddd-hex/lib/utils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"golang.org/x/crypto/bcrypt"
@@ -93,5 +95,22 @@ func (u *UserService) ChangePassword(ctx context.Context, id string, oldPwd, new
 		return
 	}
 
+	return
+}
+
+func (u *UserService) Register(ctx context.Context, f vo.RegisterForm) (err error) {
+	if len(f.Phone) == 0 {
+		err = errors.New("phone must be send")
+		return
+	}
+
+	if len(f.Password) == 0 {
+		err = errors.New("password must be send")
+		return
+	}
+	user := entity.NewUser(utils.RandString(16)).SetPhone(f.Phone).SetPassword(f.Password)
+	if err = u.repo.Create(ctx, []*entity.User{user}); err != nil {
+		return
+	}
 	return
 }

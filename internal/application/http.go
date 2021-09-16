@@ -25,7 +25,7 @@ type XHttp interface {
 type UserHandler interface {
 	SetService(serviceInterface UserServiceInterface) // 设置服务
 	Get(ctx context.Context)
-	Create(ctx context.Context)
+	Register(ctx context.Context)
 	ChangePasswd(ctx context.Context)
 	IController
 }

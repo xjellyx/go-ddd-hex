@@ -30,5 +30,5 @@ func (u *userCtl) Router(xHttp application.XHttp, isGroup bool) {
 	const user = "users"
 	xHttp.Handle("GET", user+"/:id", u.Get, isGroup)
 	xHttp.Handle("PUT", user+"/change-passwd", u.ChangePasswd, isGroup)
-	xHttp.Handle("POST", user+"/", u.Create, isGroup)
+	xHttp.Handle("POST", user+"/", u.Register, isGroup)
 }
