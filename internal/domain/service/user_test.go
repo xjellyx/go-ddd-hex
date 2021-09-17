@@ -9,6 +9,7 @@ import (
 	"github.com/olongfen/go-ddd-hex/mock/user"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"testing"
 )
 
@@ -21,8 +22,9 @@ func TestUserService_Get(t *testing.T) {
 	repo = user.NewMockUserRepo(ctl)
 	s := NewUserService(repo)
 	ctx := context.Background()
-	repo.EXPECT().Get(ctx, "1").Return(&entity.User{Username: "test1"}, nil)
-	if u, err := s.Get(ctx, "1"); err != nil {
+	f := vo.UserUnique{ID: "1"}
+	repo.EXPECT().Get(ctx, f).Return(&entity.User{Username: "test1"}, nil)
+	if u, err := s.Get(ctx, f); err != nil {
 		t.Fatal(err)
 	} else {
 		assert.Equal(t, u.Username, "test1")
@@ -58,8 +60,9 @@ func TestService_ChangePassword(t *testing.T) {
 	p := null.String{}
 	passwd, _ := bcrypt.GenerateFromPassword([]byte("111111"), bcrypt.DefaultCost)
 	p.SetValid(string(passwd))
-	repo.EXPECT().Get(ctx, id).Return(&entity.User{Password: p}, nil)
-	repo.EXPECT().Update(ctx, gomock.Any(), gomock.Any()).Return(nil)
+	user := &entity.User{Model: gorm.Model{ID: 1}, Password: p}
+	repo.EXPECT().Get(ctx, gomock.Eq(vo.UserUnique{ID: id})).Return(user, nil)
+	repo.EXPECT().Update(ctx, map[string]interface{}{"id": user.ID}, gomock.Any()).Return(nil)
 	if err := s.ChangePassword(ctx, id, "111111", "123456"); err != nil {
 		t.Fatal(err)
 	}

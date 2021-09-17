@@ -51,7 +51,7 @@ func (u *UserService) Get(ctx context.Context, unique vo.UserUnique) (res *vo.Us
 		data *entity.User
 	)
 	span, _ := opentracing.StartSpanFromContext(ctx, "UserService-Get")
-	span.SetTag("getUser", unique)
+	span.SetTag("cond", unique)
 	defer func() {
 		if err != nil {
 			span.LogFields(log.Error(err))

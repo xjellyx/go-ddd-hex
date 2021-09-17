@@ -12,6 +12,8 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/application"
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	log "github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net"
 	"net/http"
 	"time"
@@ -108,6 +110,7 @@ func (g *XGin) Init() application.XHttp {
 	if err = auth.MiddlewareInit(); err != nil {
 		log.Fatal(err)
 	}
+	g.mux.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	g.mux.POST("login", auth.LoginHandler)
 	g.mux.GET("refresh_token", auth.RefreshHandler)
 	g.mux.Use(auth.MiddlewareFunc())

@@ -19,8 +19,8 @@ type HandlerTracer struct {
 		JAEGER_AGENT_HOST
 		JAEGER_AGENT_PORT
 	*/
-	Tracer opentracing.Tracer
-	Closer io.Closer
+	opentracing.Tracer
+	io.Closer
 }
 
 var (

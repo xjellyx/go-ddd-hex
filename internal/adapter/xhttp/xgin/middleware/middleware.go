@@ -39,6 +39,14 @@ type userAuth struct {
 	ID       string `json:"id"`
 }
 
+// @Tags user
+// @Summary 刷新token
+// @Description 刷新token
+// @Accept application/json
+// @Produce application/json
+// @Success 200  {object} response.Response
+// @Failure 401  {object} response.Response "jwt验证失败"
+// @Router /refresh_token [get]
 func loginResponse(c *gin.Context, i int, s string, t time.Time) {
 	response.NewGinResponse(c).SetStatus(i).Success(s).SetMeta("expire", t.Format(time.RFC3339)).Response()
 }
@@ -65,6 +73,16 @@ func identityHandler(c *gin.Context) interface{} {
 	return res
 }
 
+// authenticator 登录逻辑
+// @Tags user
+// @Summary 用户登录
+// @Description 用户登录
+// @Accept application/json
+// @Produce application/json
+// @Param {} body vo.LoginForm true "登录表单"
+// @Success 200  {object} response.Response
+// @Failure 401  {object} response.Response "jwt验证失败"
+// @Router /login [post]
 func authenticator(fc application.UserServiceInterface) func(c *gin.Context) (res interface{}, err error) {
 	return func(c *gin.Context) (res interface{}, err error) {
 		var (
@@ -86,7 +104,6 @@ func authenticator(fc application.UserServiceInterface) func(c *gin.Context) (re
 		if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(f.Password)); err != nil {
 			return res, errors.Wrap(err, jwt.ErrFailedAuthentication.Error())
 		}
-		fmt.Println("aaaaaaaaaaaaaaaa11111111111111111", user)
 		res = &userAuth{
 			Username: user.Username,
 			UUID:     user.UUID,

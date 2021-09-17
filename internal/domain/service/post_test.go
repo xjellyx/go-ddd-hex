@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/golang/mock/gomock"
 	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
+	"github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	"github.com/olongfen/go-ddd-hex/lib/query"
 	"github.com/olongfen/go-ddd-hex/mock/post"
 	"github.com/olongfen/go-ddd-hex/mock/user"
@@ -28,7 +29,7 @@ func TestPostService_GetByUserID(t *testing.T) {
 		{Title: "test_title"},
 	}, nil)
 	userRepo = user.NewMockUserRepo(ctl)
-	userRepo.EXPECT().Get(ctx, "1").Return(user_, nil)
+	userRepo.EXPECT().Get(ctx, gomock.Eq(vo.UserUnique{ID: "1"})).Return(user_, nil)
 	p := NewPostService(postRepo, userRepo)
 	if data, err := p.GetByUserID(ctx, "1"); err != nil {
 		t.Fatal(err)

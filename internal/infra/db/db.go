@@ -7,7 +7,6 @@ import (
 	"github.com/olongfen/go-ddd-hex/internal/contant"
 	"github.com/opentracing/opentracing-go"
 	tracerLog "github.com/opentracing/opentracing-go/log"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -16,16 +15,15 @@ import (
 )
 
 var (
-	globalDB  *Database
-	injectors []func(db *gorm.DB)
+	globalDB *Database
 )
 
 type Database struct {
-	cfg *config.DBConfig
+	cfg config.DBConfig
 	db  *gorm.DB
 }
 
-func NewDatabase(cfg *config.DBConfig) *Database {
+func NewDatabase(cfg config.DBConfig) *Database {
 	globalDB = &Database{
 		cfg: cfg,
 	}
@@ -36,10 +34,13 @@ func (d *Database) DB() interface{} {
 	return d.db
 }
 
-func (d *Database) Connect() {
+func (d *Database) InjectEntities(en ...interface{}) error {
+	return d.db.AutoMigrate(en...)
+}
+
+func (d *Database) Connect() (err error) {
 	var (
 		idb *sql.DB
-		err error
 	)
 	dsn := fmt.Sprintf(`%s://%s:%s@%s:%s/%s?sslmode=disable`, d.cfg.Driver, d.cfg.Username, d.cfg.Password, d.cfg.Host,
 		d.cfg.Port, d.cfg.DatabaseName)
@@ -55,44 +56,20 @@ func (d *Database) Connect() {
 		PrepareStmt:    true,
 		NamingStrategy: schema.NamingStrategy{TablePrefix: "tb_"}, // 表明前缀
 	}); err != nil {
-		logrus.Fatal(err)
+		return
 	}
 	err = d.db.Use(&OpentracingPlugin{})
 	if err != nil {
-		logrus.Fatal(err)
 		return
 	}
 	if idb, err = d.db.DB(); err != nil {
-		logrus.Fatal(err)
+		return
 	}
 	idb.SetMaxOpenConns(d.cfg.MaxOpenConns)
 	idb.SetMaxIdleConns(d.cfg.MaxIdleConns)
 
-	registerCallback(d.db)
-	callInjector(d.db)
-
 	logrus.Infoln("db connected success")
-}
-
-// RegisterInjector 注册注入器
-func RegisterInjector(f func(*gorm.DB)) {
-	injectors = append(injectors, f)
-}
-
-func callInjector(db *gorm.DB) {
-	for _, v := range injectors {
-		v(db)
-	}
-}
-
-func registerCallback(db *gorm.DB) {
-	// 自动添加uuid
-	err := db.Callback().Create().Before("gorm:create").Register("uuid", func(db *gorm.DB) {
-		db.Statement.SetColumn("id", uuid.NewV4().String())
-	})
-	if err != nil {
-		logrus.Panicf("err: %+v", err)
-	}
+	return
 }
 
 type OpentracingPlugin struct{}

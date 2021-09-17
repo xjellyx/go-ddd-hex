@@ -12,7 +12,6 @@ import (
 	"github.com/olongfen/go-ddd-hex/lib/utils"
 	"github.com/opentracing/opentracing-go"
 	log "github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"os"
 	"os/signal"
 	"sync/atomic"
@@ -24,29 +23,26 @@ var (
 	App = new(Application)
 )
 
+// 初始化基础组件
 func init() {
 	App.Ctx, App.Cancel = utils.NewWaitGroupCtx()
-	cfg := config.GetConfig()
-	db.RegisterInjector(func(db *gorm.DB) {
-		if config.GetConfig().AutoMigrate {
-			err := db.AutoMigrate(&entity.User{}, &entity.Post{})
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	})
-	// 数据库初始化
-	App.SetDatabase(db.NewDatabase(&cfg.DBConfig))
-	App.db.Connect()
+	App.SetDatabase(db.NewDatabase(config.GetConfig().DBConfig))
+	// 数据库连接
+	if err := App.db.Connect(); err != nil {
+		log.Fatal(err)
+	}
+	if err := App.db.InjectEntities(&entity.User{}, &entity.Post{}); err != nil {
+		log.Fatal(err)
+	}
 	// 初始化链路追踪
-	t := tracer.GetHandlerTracer()
-	opentracing.SetGlobalTracer(t.Tracer)
+	App.SetTracer(tracer.GetHandlerTracer())
+	opentracing.InitGlobalTracer(App.tracer)
 	wg := utils.GetWaitGroupInCtx(App.Ctx)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		<-App.Ctx.Done()
-		if err := t.Closer.Close(); err != nil {
+		if err := App.tracer.Close(); err != nil {
 			log.Errorln(err)
 		}
 		log.Infoln("Trace Close...")
@@ -57,12 +53,13 @@ func init() {
 type Application struct {
 	Ctx              context.Context
 	Cancel           context.CancelFunc
-	repos            []Repository
-	services         []Service
-	http             XHttp
-	httpHandler      []IController
-	httpGroupHandler []IController
-	db               Database
+	repos            []Repository  // 存储库
+	services         []Service     // 服务
+	http             XHttp         // http
+	httpHandler      []IController // http 路由
+	httpGroupHandler []IController // http 组路由
+	db               Database      // 数据库基础组件
+	tracer           Tracer
 }
 
 func checkRepo(repo Repository) (err error) {
@@ -124,7 +121,6 @@ func (a *Application) InjectServices() *Application {
 			v.(UserHandler).SetService(userService)
 		}
 	}
-
 	a.http.Init().Use()
 	return a
 }
@@ -136,14 +132,14 @@ func (a *Application) AppendRepo(repo Repository) *Application {
 }
 
 // AppendHTTPHandler http handler
-func (a *Application) AppendHTTPHandler(repo IController) *Application {
-	a.httpHandler = append(a.httpHandler, repo)
+func (a *Application) AppendHTTPHandler(ctl IController) *Application {
+	a.httpHandler = append(a.httpHandler, ctl)
 	return a
 }
 
 // AppendHTTPGroupHandler http handler
-func (a *Application) AppendHTTPGroupHandler(repo IController) *Application {
-	a.httpGroupHandler = append(a.httpGroupHandler, repo)
+func (a *Application) AppendHTTPGroupHandler(ctl IController) *Application {
+	a.httpGroupHandler = append(a.httpGroupHandler, ctl)
 	return a
 }
 
@@ -156,6 +152,12 @@ func (a *Application) SetHttp(x XHttp) *Application {
 // SetDatabase 设置数据库基础组件
 func (a *Application) SetDatabase(d Database) *Application {
 	a.db = d
+	return a
+}
+
+// SetTracer 设置链路追踪基础组件
+func (a *Application) SetTracer(t Tracer) *Application {
+	a.tracer = t
 	return a
 }
 

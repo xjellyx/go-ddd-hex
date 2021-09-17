@@ -24,6 +24,7 @@ type UserServiceInterface interface {
 // PostServiceInterface post 服务接口
 type PostServiceInterface interface {
 	GetByUserID(ctx context.Context, userID string) (*aggregate.QueryUserPostRes, error)
+	Create(ctx context.Context)
 }
 
 // Service service 服务接口

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/olongfen/go-ddd-hex/internal/domain/aggregate"
 	"github.com/olongfen/go-ddd-hex/internal/domain/dependency"
+	"github.com/olongfen/go-ddd-hex/internal/domain/entity"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 )
@@ -30,4 +31,8 @@ func (p *PostService) GetByUserID(ctx context.Context, userId string) (res *aggr
 		return
 	}
 	return
+}
+
+func (p *PostService) Create(ctx context.Context) {
+	p.repo.Create(ctx, []*entity.Post{{Title: "dsafadsfadsf", Content: "dsafjldsajglkjhglkhjlkhjiuhfkghsdakhg"}})
 }

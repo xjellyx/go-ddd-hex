@@ -17,6 +17,20 @@ definitions:
       meta:
         $ref: '#/definitions/response.Meta'
     type: object
+  vo.LoginForm:
+    properties:
+      captchaId:
+        type: string
+      digits:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
   vo.RegisterForm:
     properties:
       password:
@@ -98,9 +112,7 @@ paths:
         name: '[object]'
         required: true
         schema:
-          items:
-            $ref: '#/definitions/vo.RegisterForm'
-          type: array
+          $ref: '#/definitions/vo.RegisterForm'
       produces:
       - application/json
       responses:
@@ -115,4 +127,49 @@ paths:
       summary: 创建user记录
       tags:
       - User用户
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录
+      parameters:
+      - description: 登录表单
+        in: body
+        name: '{}'
+        required: true
+        schema:
+          $ref: '#/definitions/vo.LoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: jwt验证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 用户登录
+      tags:
+      - user
+  /refresh_token:
+    get:
+      consumes:
+      - application/json
+      description: 刷新token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: jwt验证失败
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 刷新token
+      tags:
+      - user
 swagger: "2.0"

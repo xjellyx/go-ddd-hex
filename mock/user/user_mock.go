@@ -10,6 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	entity "github.com/olongfen/go-ddd-hex/internal/domain/entity"
+	vo "github.com/olongfen/go-ddd-hex/internal/domain/vo"
 	query "github.com/olongfen/go-ddd-hex/lib/query"
 )
 
@@ -80,18 +81,18 @@ func (mr *MockUserRepoMockRecorder) Find(ctx, cond, meta interface{}) *gomock.Ca
 }
 
 // Get mocks base method.
-func (m *MockUserRepo) Get(ctx context.Context, id string) (*entity.User, error) {
+func (m *MockUserRepo) Get(ctx context.Context, unique vo.UserUnique) (*entity.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret := m.ctrl.Call(m, "Get", ctx, unique)
 	ret0, _ := ret[0].(*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockUserRepoMockRecorder) Get(ctx, id interface{}) *gomock.Call {
+func (mr *MockUserRepoMockRecorder) Get(ctx, unique interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepo)(nil).Get), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepo)(nil).Get), ctx, unique)
 }
 
 // Update mocks base method.
